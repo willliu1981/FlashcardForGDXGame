@@ -6,16 +6,17 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 
+
 public class FlashcardGdxGame extends Game {
-    TestGameScreen screen;
+
 
 
     @Override
     public void create() {
 
-        screen = new TestGameScreen();
-        setScreen(screen);
+        TestScreen screen=new TestScreen();
 
+        setScreen(screen);
 
     }
 

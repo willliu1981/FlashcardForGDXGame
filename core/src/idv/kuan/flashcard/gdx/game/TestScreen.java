@@ -3,18 +3,25 @@ package idv.kuan.flashcard.gdx.game;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-public class TestGameScreen implements Screen {
+import java.sql.Connection;
+
+import idv.kuan.libs.databases.utils.DBFactoryBuilder;
+
+public class TestScreen implements Screen {
+
     SpriteBatch batch;
     Texture img;
 
-    public TestGameScreen() {
+    public TestScreen() {
         batch = new SpriteBatch();
         img = new Texture("badlogic.jpg");
 
+        Connection connection = DBFactoryBuilder.getFactory().getConnection();
 
+
+        System.out.println("xxx TS: " + connection);
 
 
     }
@@ -23,7 +30,6 @@ public class TestGameScreen implements Screen {
     public void show() {
 
     }
-
 
 
     @Override
