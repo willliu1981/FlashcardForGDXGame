@@ -6,15 +6,25 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 
+import idv.kuan.libs.utils.VersionHelper;
+
 
 public class FlashcardGdxGame extends Game {
 
+    private VersionHelper versionHelper;
+
+    public FlashcardGdxGame() {
+    }
+
+    public FlashcardGdxGame(VersionHelper versionHelper) {
+        this.versionHelper = versionHelper;
+    }
 
 
     @Override
     public void create() {
 
-        TestScreen screen=new TestScreen();
+        TestScreen screen = new TestScreen(versionHelper);
 
         setScreen(screen);
 
