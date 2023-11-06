@@ -28,20 +28,21 @@ public class TestScreen implements Screen {
         System.out.println("xxx TS: " + connection);
 
 
-        SchemaModifierHandler handler = new SchemaModifierHandler(connection,versionHelper.getVersionCode() );
+        SchemaModifierHandler handler = new SchemaModifierHandler(connection, versionHelper.getVersionCode());
         SchemaModifierHandler.SchemaModifierBuilder schemaModifierBuilder = handler.getSchemaModifierBuilder();
-        schemaModifierBuilder.setConstructionSql("CREATE TABLE \"word\" ( " +
-                " \"id\" INTEGER NOT NULL UNIQUE, " +
-                " \"term\" TEXT NOT NULL, " +
-                " \"translation\" TEXT NOT NULL, " +
-                " \"at_created\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
-                " \"at_updated\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
-                " \"metadata\" BLOB, " +
-                " PRIMARY KEY(\"id\" AUTOINCREMENT) " +
-                ")");
+        TableSchemaModifier schemaModifier = schemaModifierBuilder
+                .setConstructionSql("CREATE TABLE \"word\" ( " +
+                        " \"id\" INTEGER NOT NULL UNIQUE, " +
+                        " \"term\" TEXT NOT NULL, " +
+                        " \"translation\" TEXT NOT NULL, " +
+                        " \"at_created\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
+                        " \"at_updated\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
+                        " \"metadata\" BLOB, " +
+                        " PRIMARY KEY(\"id\" AUTOINCREMENT) " +
+                        ")")
+                .setTableName("word")
+                .createSchemaModifier(TableSchemaModifier.class);
 
-        TableSchemaModifier schemaModifier = (TableSchemaModifier) schemaModifierBuilder.createSchemaModifier(TableSchemaModifier.class);
-        schemaModifier.setTableName("word");
         schemaModifier.setCurrentColumns("id,term,translation,at_created,at_updated");
         schemaModifier.setSelectedColumns("id,term,translation,at_created,at_updated");
 
