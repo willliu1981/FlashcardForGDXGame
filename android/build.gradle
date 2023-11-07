@@ -21,7 +21,7 @@ android {
         applicationId "idv.kuan.flashcard.gdx.game"
         minSdkVersion 24
         targetSdkVersion 33
-        versionCode 6
+        versionCode 7
         versionName "1.0"
     }
     buildTypes {

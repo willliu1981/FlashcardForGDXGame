@@ -15,6 +15,7 @@ import java.util.List;
 
 import idv.kuan.libs.databases.schema.modifier.DatabaseSchemaUtils;
 import idv.kuan.libs.databases.schema.modifier.SchemaModifier;
+import idv.kuan.libs.databases.schema.modifier.SchemaModifierImpl;
 import idv.kuan.libs.utils.VersionHelper;
 import idv.kuan.libs.databases.schema.modifier.SchemaModifierHandler;
 import idv.kuan.libs.databases.schema.modifier.TableSchemaModifier;
@@ -45,33 +46,33 @@ public class TestScreen implements Screen {
 
         DatabaseSchemaUtils.checkAndUpdateSchema(versionHelper, new DatabaseSchemaUtils.UpdateSchemaExecutor() {
             @Override
-            public <T extends SchemaModifier> void execute(SchemaModifierHandler.SchemaModifierBuilder modifierBuilder, List<T> modifiers) {
+            public void execute(SchemaModifierHandler.SchemaModifierBuilder modifierBuilder, List<SchemaModifier> modifiers) {
                 TableSchemaModifier word = modifierBuilder.setConstructionSql("CREATE TABLE \"word\" ( " +
                         " \"id\" INTEGER NOT NULL UNIQUE, " +
                         " \"term_1\" TEXT NOT NULL, " +
-                        " \"translation_1x\" TEXT NOT NULL, " +
+                        " \"translation_1y\" TEXT NOT NULL, " +
                         " \"at_created\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
                         " \"at_updated\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
                         " \"metadata\" BLOB, " +
                         " PRIMARY KEY(\"id\" AUTOINCREMENT) " +
                         ")").setTableName("word").createSchemaModifier(TableSchemaModifier.class);
-                word.setNewColumns("id,term_1,translation_x1,at_created,at_updated,metadata");
-                word.setOldColumns("id,term_1,translation_1,at_created,at_updated,metadata");
+                word.setNewColumns("id,term_1,translation_1y,at_created,at_updated,metadata");
+                word.setOldColumns("id,term_1,translation_1x,at_created,at_updated,metadata");
 
                 TableSchemaModifier word2 = modifierBuilder.setConstructionSql("CREATE TABLE \"word2\" ( " +
                         " \"id\" INTEGER NOT NULL UNIQUE, " +
                         " \"term_2\" TEXT NOT NULL, " +
-                        " \"translation_x2\" TEXT NOT NULL, " +
+                        " \"translation_2y\" TEXT NOT NULL, " +
                         " \"at_created\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
                         " \"at_updated\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
                         " \"metadata\" BLOB, " +
                         " PRIMARY KEY(\"id\" AUTOINCREMENT) " +
                         ")").setTableName("word2").createSchemaModifier(TableSchemaModifier.class);
-                word2.setNewColumns("id,term_2,translation_x2,at_created,at_updated,metadata");
-                word2.setOldColumns("id,term_2,translation_2,at_created,at_updated,metadata");
+                word2.setNewColumns("id,term_2,translation_2y,at_created,at_updated,metadata");
+                word2.setOldColumns("id,term_2,translation_2x,at_created,at_updated,metadata");
 
-                modifiers.add((T) word);
-                modifiers.add((T) word2);
+                modifiers.add(word);
+                modifiers.add(word2);
             }
         });
     }
