@@ -1,10 +1,11 @@
 package idv.kuan.flashcard.gdx.game;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.viewport.StretchViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 import idv.kuan.libs.utils.VersionHelper;
 
@@ -28,20 +29,27 @@ public class FlashcardGdxGame extends Game {
 
         setScreen(screen);
 
+
+
     }
 
     @Override
     public void render() {
+
+
+
         super.render();
     }
 
     @Override
     public void dispose() {
         screen.dispose();
+
     }
 
     @Override
     public void resize(int width, int height) {
         screen.resize(width, height);
+
     }
 }

@@ -7,7 +7,7 @@ import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 
 import idv.kuan.kuanandroidlibs.databases.provider.AndroidSQLiteFactory;
 import idv.kuan.kuanandroidlibs.utils.AndroidVersionHelper;
-import idv.kuan.libs.utils.DBFactoryBuilder;
+import idv.kuan.libs.databases.DBFactoryConfiguration;
 
 public class AndroidLauncher extends AndroidApplication {
 	@Override
@@ -18,6 +18,7 @@ public class AndroidLauncher extends AndroidApplication {
 		initialize(new FlashcardGdxGame(new AndroidVersionHelper(this)), config);
 
 
-		DBFactoryBuilder.getFactory(new AndroidSQLiteFactory(this)).config("android1","fsgdx","fsgdx");
+		DBFactoryConfiguration.getFactory(new AndroidSQLiteFactory(this)).config("android1","fsgdx","fsgdx");
 	}
 }
+
