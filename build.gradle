@@ -43,15 +43,56 @@ allprojects {
 project(":desktop") {
     apply plugin: "java-library"
 
+    // 定義版本資訊
+    ext {
+        appName = "MyLibGDXApp"
+        versionCode = 8
+        versionName = "1.0"
+    }
+
 
     dependencies {
         implementation project(":core")
         api "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+        implementation 'org.xerial:sqlite-jdbc:3.34.0'
 
         implementation project(':common')
 
     }
+
+
+    task generateVersionClass {
+        doLast {
+            def className = 'DesktopVersionHelper'
+            def packageName = 'idv.kuan.flashcard.gdx.game'
+            def srcDir = projectDir.toString() + '/src/' + packageName.replace('.', '/')
+            def file = new File(srcDir, "${className}.java")
+            println "Generating Version class at: ${file.absolutePath}" // 添加打印語句
+
+            if (!file.parentFile.exists()) {
+                file.parentFile.mkdirs()
+            }
+
+            file.text = """
+        package ${packageName};
+        import idv.kuan.libs.impl.DefaultVersionHelper;
+
+        public class ${className} extends DefaultVersionHelper{
+                public String getVersionName() {
+                    return "${project.ext.versionName}";
+                }
+
+                public int getVersionCode() {
+                    return ${project.ext.versionCode};
+                }
+        }
+        """
+        }
+    }
+
+
+    compileJava.dependsOn generateVersionClass
 }
 
 project(":android") {

@@ -15,10 +15,11 @@ public class AndroidLauncher extends AndroidApplication {
 		super.onCreate(savedInstanceState);
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
 
+		DBFactoryConfiguration.getFactory(new AndroidSQLiteFactory(this)).config("android1","fsgdx","fsgdx");
+
 		initialize(new FlashcardGdxGame(new AndroidVersionHelper(this)), config);
 
 
-		DBFactoryConfiguration.getFactory(new AndroidSQLiteFactory(this)).config("android1","fsgdx","fsgdx");
 	}
 }
 

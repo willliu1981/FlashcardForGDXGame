@@ -14,8 +14,6 @@ public class FlashcardGdxGame extends Game {
 
     private VersionHelper versionHelper;
 
-    public FlashcardGdxGame() {
-    }
 
     public FlashcardGdxGame(VersionHelper versionHelper) {
         this.versionHelper = versionHelper;
@@ -30,12 +28,10 @@ public class FlashcardGdxGame extends Game {
         setScreen(screen);
 
 
-
     }
 
     @Override
     public void render() {
-
 
 
         super.render();
