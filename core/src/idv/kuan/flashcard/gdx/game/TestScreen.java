@@ -74,25 +74,22 @@ public class TestScreen implements Screen {
     }
 
     private void checkSchema() {
-
-
         DatabaseSchemaUtils.checkAndUpdateSchema(versionHelper, new DatabaseSchemaUtils.UpdateSchemaExecutor() {
             @Override
             public void execute(SchemaModifierHandler.SchemaModifierBuilder modifierBuilder, List<SchemaModifier> modifiers) {
                 TableSchemaModifier word = modifierBuilder.setConstructionSql("CREATE TABLE \"word\" ( " +
                         " \"id\" INTEGER NOT NULL UNIQUE, " +
                         " \"term\" TEXT NOT NULL, " +
-                        " \"translation\" TEXT NOT NULL, " +
+                        " \"translationx6\" TEXT NOT NULL, " +
                         " \"at_created\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
                         " \"at_updated\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
                         " \"metadata\" BLOB, " +
                         " PRIMARY KEY(\"id\" AUTOINCREMENT) " +
                         ")").setTableName("word").createSchemaModifier(TableSchemaModifier.class);
-                word.setNewColumns("id,term,translation,at_created,at_updated,metadata");
-                word.setOldColumns("id,term,translation,at_created,at_updated,metadata");
+                word.setNewColumns("id,term,translationx6,at_created,at_updated,metadata");
+                word.setOldColumns("id,term,translationx6,at_created,at_updated,metadata");
 
                 modifiers.add(word);
-
             }
         });
     }
