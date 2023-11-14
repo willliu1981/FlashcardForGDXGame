@@ -17,10 +17,17 @@ import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.JTextField;
 
+import idv.kuan.flashcard.gdx.game.database.dao.WordDao;
+import idv.kuan.flashcard.gdx.game.database.entity.Word;
+import idv.kuan.libs.databases.daos.Dao;
+import idv.kuan.libs.databases.models.MetadataEntity;
+import idv.kuan.libs.databases.models.MetadataEntityUtil;
 import idv.kuan.libs.databases.schema.modifier.DatabaseSchemaUtils;
 import idv.kuan.libs.databases.schema.modifier.SchemaModifier;
 import idv.kuan.libs.databases.schema.modifier.SchemaModifierImpl;
@@ -53,24 +60,56 @@ public class TestScreen implements Screen {
 
         Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
 
+        //button
         TextButton button = new TextButton("click me", skin);
         button.setPosition(150, 200);
         button.setSize(200, 50);
         button.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                System.out.println("xxx TS:Button pressed");
-                ((TextButton) actor).setText(textField.getText());
+
+                WordDao dao = new WordDao();
+                Word word = new Word();
+
+                Date date = new Date();
+                word.setTerm("term1-" + date);
+                word.setTranslation("trans1-" + date);
+
+                MetadataEntityUtil.Metadata metadata = word.getMetadata();
+                //metadata.setData("1234-" + date);
+
+
+                try {
+                    dao.create(word);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                textField.setText(word.toString());
             }
         });
 
 
         textField = new TextField("edit...", skin);
-        textField.setPosition(150, 300);
-        textField.setSize(200, 50);
+        textField.setPosition(50, 300);
+        textField.setSize(700, 50);
 
         stage.addActor(button);
         stage.addActor(textField);
+
+        testShow();
+    }
+
+    private void testShow() {
+        Dao dao = new WordDao();
+        try {
+            List<Word> all = dao.findAll();
+            System.out.println("xxx TS list:");
+            all.forEach(x -> System.out.print(x));
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void checkSchema() {
@@ -80,14 +119,14 @@ public class TestScreen implements Screen {
                 TableSchemaModifier word = modifierBuilder.setConstructionSql("CREATE TABLE \"word\" ( " +
                         " \"id\" INTEGER NOT NULL UNIQUE, " +
                         " \"term\" TEXT NOT NULL, " +
-                        " \"translationx6\" TEXT NOT NULL, " +
+                        " \"translation\" TEXT NOT NULL, " +
                         " \"at_created\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
                         " \"at_updated\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
                         " \"metadata\" BLOB, " +
                         " PRIMARY KEY(\"id\" AUTOINCREMENT) " +
                         ")").setTableName("word").createSchemaModifier(TableSchemaModifier.class);
-                word.setNewColumns("id,term,translationx6,at_created,at_updated,metadata");
-                word.setOldColumns("id,term,translationx6,at_created,at_updated,metadata");
+                word.setNewColumns("id,term,translation,at_created,at_updated,metadata");
+                word.setOldColumns("id,term,translation,at_created,at_updated,metadata");
 
                 modifiers.add(word);
             }

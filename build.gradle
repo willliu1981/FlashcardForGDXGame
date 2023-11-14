@@ -46,7 +46,7 @@ project(":desktop") {
     // 定義版本資訊
     ext {
         appName = "MyLibGDXApp"
-        versionCode = 26
+        versionCode = 27
         versionName = "1.0"
     }
 
