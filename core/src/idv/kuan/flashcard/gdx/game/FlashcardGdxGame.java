@@ -7,6 +7,9 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import idv.kuan.flashcard.gdx.game.database.entity.TestMetadata;
+import idv.kuan.flashcard.gdx.game.database.entity.TestV2Metadata;
+import idv.kuan.libs.databases.models.MetadataRegister;
 import idv.kuan.libs.utils.VersionHelper;
 
 
@@ -17,6 +20,9 @@ public class FlashcardGdxGame extends Game {
 
     public FlashcardGdxGame(VersionHelper versionHelper) {
         this.versionHelper = versionHelper;
+
+        MetadataRegister.addMetadata(1, TestMetadata.class);
+        MetadataRegister.addMetadata(2, TestV2Metadata.class);
     }
 
 

@@ -24,6 +24,7 @@ import java.util.List;
 import javax.swing.JTextField;
 
 import idv.kuan.flashcard.gdx.game.database.dao.WordDao;
+import idv.kuan.flashcard.gdx.game.database.entity.TestMetadata;
 import idv.kuan.flashcard.gdx.game.database.entity.Word;
 import idv.kuan.libs.databases.daos.Dao;
 import idv.kuan.libs.databases.models.MetadataEntity;
@@ -44,6 +45,7 @@ public class TestScreen implements Screen {
     Texture img;
 
     TextField textField;
+    TextField testTextField;
 
     public TestScreen(VersionHelper versionHelper) {
         batch = new SpriteBatch();
@@ -62,7 +64,7 @@ public class TestScreen implements Screen {
 
         //button
         TextButton button = new TextButton("click me", skin);
-        button.setPosition(150, 200);
+        button.setPosition(150, 100);
         button.setSize(200, 50);
         button.addListener(new ChangeListener() {
             @Override
@@ -74,9 +76,12 @@ public class TestScreen implements Screen {
                 Date date = new Date();
                 word.setTerm("term1-" + date);
                 word.setTranslation("trans1-" + date);
+                word.setVersion(1);
 
                 MetadataEntityUtil.Metadata metadata = word.getMetadata();
                 //metadata.setData("1234-" + date);
+                MetadataEntityUtil.Metadata metadata1 = new TestMetadata();
+                metadata1.addMetadataObject("msg", new MetadataEntityUtil.MetadataObject("v1"));
 
 
                 try {
@@ -93,8 +98,14 @@ public class TestScreen implements Screen {
         textField.setPosition(50, 300);
         textField.setSize(700, 50);
 
+        testTextField = new TextField("msg", skin);
+        testTextField.setPosition(50, 200);
+        testTextField.setSize(700, 50);
+
+
         stage.addActor(button);
         stage.addActor(textField);
+        stage.addActor(testTextField);
 
         testShow();
     }
@@ -122,11 +133,12 @@ public class TestScreen implements Screen {
                         " \"translation\" TEXT NOT NULL, " +
                         " \"at_created\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
                         " \"at_updated\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
+                        " \"version\" INTEGER NOT NULL, " +
                         " \"metadata\" BLOB, " +
                         " PRIMARY KEY(\"id\" AUTOINCREMENT) " +
                         ")").setTableName("word").createSchemaModifier(TableSchemaModifier.class);
-                word.setNewColumns("id,term,translation,at_created,at_updated,metadata");
-                word.setOldColumns("id,term,translation,at_created,at_updated,metadata");
+                word.setNewColumns("id,term,translation,at_created,at_updated,version,metadata");
+                word.setOldColumns("id,term,translation,at_created,at_updated,-1,metadata");
 
                 modifiers.add(word);
             }

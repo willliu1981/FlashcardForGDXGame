@@ -17,13 +17,16 @@ android {
     packagingOptions {
         exclude 'META-INF/robovm/ios/robovm.xml'
     }
+
     defaultConfig {
         applicationId "idv.kuan.flashcard.gdx.game"
         minSdkVersion 24
         targetSdkVersion 33
-        versionCode 11
-        versionName "1.0"
+
+        versionCode project.versionCodeGlobal
+        versionName project.versionNameGlobal
     }
+
     buildTypes {
         release {
             minifyEnabled true

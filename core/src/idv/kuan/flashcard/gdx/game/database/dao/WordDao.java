@@ -22,6 +22,7 @@ public class WordDao extends CommonDao<Word> {
     protected void populateColumnBuilderWithEntityProperties(QueryBuilder builder, Word entity) {
         builder.addColumnValue("term", entity.getTerm());
         builder.addColumnValue("translation", entity.getTranslation());
+        builder.addColumnValue("version", entity.getVersion());
         //metadata
         byte[] dataToSave = MetadataEntityUtil.serializeMetadata(entity.getMetadata());
         builder.addColumnValue("metadata", dataToSave);
