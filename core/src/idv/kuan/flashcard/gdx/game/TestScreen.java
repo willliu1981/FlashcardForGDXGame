@@ -26,6 +26,8 @@ import javax.swing.JTextField;
 import idv.kuan.flashcard.gdx.game.database.dao.WordDao;
 import idv.kuan.flashcard.gdx.game.database.entity.TestMetadata;
 import idv.kuan.flashcard.gdx.game.database.entity.Word;
+import idv.kuan.flashcard.gdx.game.test.Test1;
+import idv.kuan.flashcard.gdx.game.test.Test2;
 import idv.kuan.libs.databases.daos.Dao;
 import idv.kuan.libs.databases.models.MetadataEntity;
 import idv.kuan.libs.databases.models.MetadataEntityUtil;
@@ -101,11 +103,26 @@ public class TestScreen implements Screen {
         testTextField = new TextField("msg", skin);
         testTextField.setPosition(50, 200);
         testTextField.setSize(700, 50);
+        TextButton testButton = new TextButton("test", skin);
+        testButton.setPosition(400, 100);
+        testButton.setSize(200, 50);
+        testButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+
+
+                Test2 test2=new Test2();
+                String s = test2.testTest();
+
+                testTextField.setText(s);
+            }
+        });
 
 
         stage.addActor(button);
         stage.addActor(textField);
         stage.addActor(testTextField);
+        stage.addActor(testButton);
 
         testShow();
     }
@@ -116,6 +133,8 @@ public class TestScreen implements Screen {
             List<Word> all = dao.findAll();
             System.out.println("xxx TS list:");
             all.forEach(x -> System.out.print(x));
+
+            System.out.println();
 
         } catch (SQLException e) {
             e.printStackTrace();

@@ -13,6 +13,7 @@ public class DesktopLauncher {
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         config.setForegroundFPS(60);
         config.setTitle("FlashcardForLibgdxGame");
+        config.setWindowedMode(1920,1080);
 
         DBFactoryConfiguration.getFactory(new DefaultDBFactory()).config("desktop1", "C:/java/db/sqlite/flashcard for gdx game/fcgdx.db");
 
