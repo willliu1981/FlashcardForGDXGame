@@ -28,6 +28,7 @@ import idv.kuan.flashcard.gdx.game.database.entity.TestMetadata;
 import idv.kuan.flashcard.gdx.game.database.entity.Word;
 import idv.kuan.flashcard.gdx.game.test.Test1;
 import idv.kuan.flashcard.gdx.game.test.Test2;
+import idv.kuan.flashcard.gdx.game.test.Test4;
 import idv.kuan.libs.databases.daos.Dao;
 import idv.kuan.libs.databases.models.MetadataEntity;
 import idv.kuan.libs.databases.models.MetadataEntityUtil;
@@ -111,8 +112,8 @@ public class TestScreen implements Screen {
             public void changed(ChangeEvent event, Actor actor) {
 
 
-                Test2 test2=new Test2();
-                String s = test2.testTest();
+                Test4 test = new Test4();
+                String s = test.test();
 
                 testTextField.setText(s);
             }
