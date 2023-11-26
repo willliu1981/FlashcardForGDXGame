@@ -77,9 +77,10 @@ public class MainScreen implements Screen {
         });
 
 
-        textField = new TextField("Word FlashCard", skin);
+        textField = new TextField("Word FlashCard",skin);
         textField.setPosition(50, 300);
         textField.setSize(700, 50);
+
 
         testTextField = new TextField("count:0", skin);
         testTextField.setPosition(50, 200);
