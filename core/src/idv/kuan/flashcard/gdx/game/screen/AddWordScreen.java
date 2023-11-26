@@ -25,6 +25,7 @@ public class AddWordScreen implements Screen {
 
     SpriteBatch batch;
     Texture img;
+    Skin skin;
 
     TextField textField;
     TextField testTextField;
@@ -40,13 +41,11 @@ public class AddWordScreen implements Screen {
         Gdx.input.setInputProcessor(stage);
 
 
-        TextField.TextFieldStyle textFieldStyle = generateFont("");
+        skin = new Skin(Gdx.files.internal("uiskin.json"));
+
+        TextField.TextFieldStyle textFieldStyle = generateStyleWithFont("");
 
 
-        Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
-        skin.add("default", textFieldStyle);
-
-        //
         TextButton btnAdd = new TextButton("Empty", skin);
         btnAdd.setPosition(150, 100);
         btnAdd.setSize(200, 50);
@@ -70,7 +69,7 @@ public class AddWordScreen implements Screen {
         });
 
 
-        textField = new TextField("Add Word", skin);
+        textField = new TextField("Add Word", textFieldStyle);
         textField.setPosition(50, 300);
         textField.setSize(700, 50);
         StringBuilder charactersToLoad = new StringBuilder();
@@ -80,7 +79,7 @@ public class AddWordScreen implements Screen {
                 if (charactersToLoad.indexOf(String.valueOf(c)) < 0) { // 如果字符集中沒有該字符
                     charactersToLoad.append(c); // 添加到字符集中
                     textField.getStyle().font.dispose();
-                    TextField.TextFieldStyle Style = generateFont(charactersToLoad.toString());
+                    TextField.TextFieldStyle Style = generateStyleWithFont(charactersToLoad.toString());
                     textField.setStyle(Style);
                 }
             }
@@ -99,7 +98,7 @@ public class AddWordScreen implements Screen {
 
     }
 
-    private TextField.TextFieldStyle generateFont(String userInput) {
+    private TextField.TextFieldStyle generateStyleWithFont(String userInput) {
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("GenJyuuGothic-Monospace-Normal.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
         parameter.size = 12; // 字體大小
@@ -110,6 +109,9 @@ public class AddWordScreen implements Screen {
         TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
         textFieldStyle.font = font;
         textFieldStyle.fontColor = Color.WHITE;
+        textFieldStyle.background = skin.getDrawable("textfield");
+        textFieldStyle.cursor = skin.getDrawable("cursor");
+        textFieldStyle.selection = skin.getDrawable("selection");
 
         return textFieldStyle;
     }
