@@ -58,7 +58,6 @@ project(":desktop") {
         implementation 'org.xerial:sqlite-jdbc:3.34.0'
 
         implementation project(':common')
-
     }
 
 
@@ -129,5 +128,7 @@ project(":core") {
         api "com.badlogicgames.gdx:gdx:$gdxVersion"
 
         implementation project(':common')
+        implementation project('test:lib')
+
     }
 }

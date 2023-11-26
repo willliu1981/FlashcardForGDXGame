@@ -1,4 +1,4 @@
-package idv.kuan.flashcard.gdx.game.test;
+package idv.kuan.testlib.test;
 
 import idv.kuan.libs.interfaces.chain.Convertible;
 import idv.kuan.libs.interfaces.chain.VersionConverter;

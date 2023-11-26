@@ -11,33 +11,25 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
-import javax.swing.JTextField;
-
 import idv.kuan.flashcard.gdx.game.database.dao.WordDao;
 import idv.kuan.flashcard.gdx.game.database.entity.TestMetadata;
 import idv.kuan.flashcard.gdx.game.database.entity.Word;
-import idv.kuan.flashcard.gdx.game.test.Test1;
-import idv.kuan.flashcard.gdx.game.test.Test2;
-import idv.kuan.flashcard.gdx.game.test.Test4;
+
 import idv.kuan.libs.databases.daos.Dao;
-import idv.kuan.libs.databases.models.MetadataEntity;
 import idv.kuan.libs.databases.models.MetadataEntityUtil;
 import idv.kuan.libs.databases.schema.modifier.DatabaseSchemaUtils;
 import idv.kuan.libs.databases.schema.modifier.SchemaModifier;
-import idv.kuan.libs.databases.schema.modifier.SchemaModifierImpl;
 import idv.kuan.libs.utils.VersionHelper;
 import idv.kuan.libs.databases.schema.modifier.SchemaModifierHandler;
 import idv.kuan.libs.databases.schema.modifier.TableSchemaModifier;
+import idv.kuan.testlib.test.Test4;
 
 public class TestScreen implements Screen {
     private Stage stage;

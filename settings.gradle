@@ -1,7 +1,10 @@
 include 'desktop', 'android', 'core'
 
 include ':common'
-project(':common').projectDir=new File(settingsDir,'../Kuanlibs/common')
+project(':common').projectDir = new File(settingsDir, '../Kuanlibs/common')
 
 include ':kuanandroidlibs'
-project(':kuanandroidlibs').projectDir=new File(settingsDir,'../Kuanlibs/kuanandroidlibs')
+project(':kuanandroidlibs').projectDir = new File(settingsDir, '../Kuanlibs/kuanandroidlibs')
+
+
+include ':core:test:lib'

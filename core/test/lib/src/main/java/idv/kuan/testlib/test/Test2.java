@@ -1,4 +1,4 @@
-package idv.kuan.flashcard.gdx.game.test;
+package idv.kuan.testlib.test;
 
 public class Test2 {
 
