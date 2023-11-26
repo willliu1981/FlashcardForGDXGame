@@ -1,4 +1,4 @@
-package idv.kuan.flashcard.gdx.game;
+package idv.kuan.flashcard.gdx.game.test;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -19,7 +19,7 @@ import java.util.Date;
 import java.util.List;
 
 import idv.kuan.flashcard.gdx.game.database.dao.WordDao;
-import idv.kuan.flashcard.gdx.game.database.entity.TestMetadata;
+import idv.kuan.testlib.test.TestMetadata;
 import idv.kuan.flashcard.gdx.game.database.entity.Word;
 
 import idv.kuan.libs.databases.daos.Dao;
@@ -73,9 +73,9 @@ public class TestScreen implements Screen {
                 word.setTranslation("trans1-" + date);
                 word.setVersion(1);
 
-                MetadataEntityUtil.Metadata metadata = word.getMetadata();
+                MetadataEntityUtil.DefaultMetadata metadata = word.getMetadata();
                 //metadata.setData("1234-" + date);
-                MetadataEntityUtil.Metadata metadata1 = new TestMetadata();
+                MetadataEntityUtil.DefaultMetadata metadata1 = new TestMetadata();
                 metadata1.addMetadataObject("msg", new MetadataEntityUtil.MetadataObject("v1"));
 
 

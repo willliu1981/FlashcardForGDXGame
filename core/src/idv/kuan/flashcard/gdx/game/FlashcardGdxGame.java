@@ -1,14 +1,11 @@
 package idv.kuan.flashcard.gdx.game;
 
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.utils.viewport.StretchViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
 
-import idv.kuan.flashcard.gdx.game.database.entity.TestMetadata;
-import idv.kuan.flashcard.gdx.game.database.entity.TestV2Metadata;
+import idv.kuan.flashcard.gdx.game.screen.MainScreen;
+import idv.kuan.flashcard.gdx.game.test.TestScreen;
+import idv.kuan.testlib.test.TestMetadata;
+import idv.kuan.testlib.test.TestV2Metadata;
 import idv.kuan.libs.databases.models.MetadataRegister;
 import idv.kuan.libs.utils.VersionHelper;
 
@@ -29,7 +26,7 @@ public class FlashcardGdxGame extends Game {
     @Override
     public void create() {
 
-        TestScreen screen = new TestScreen(versionHelper);
+        MainScreen screen = new MainScreen(this, versionHelper);
 
         setScreen(screen);
 

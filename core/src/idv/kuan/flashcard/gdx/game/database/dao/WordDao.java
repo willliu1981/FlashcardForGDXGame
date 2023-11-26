@@ -7,7 +7,6 @@ import idv.kuan.flashcard.gdx.game.database.entity.Word;
 import idv.kuan.libs.databases.QueryBuilder;
 
 import idv.kuan.libs.databases.daos.CommonDao;
-import idv.kuan.libs.databases.models.MetadataEntity;
 import idv.kuan.libs.databases.models.MetadataEntityUtil;
 
 public class WordDao extends CommonDao<Word> {
@@ -35,7 +34,7 @@ public class WordDao extends CommonDao<Word> {
         entity.setVersion(resultSet.getInt("version"));
         //metadata
         byte[] retrievedData = resultSet.getBytes("metadata");
-        MetadataEntityUtil.Metadata metadata = MetadataEntityUtil.metadataBuilder().
+        MetadataEntityUtil.DefaultMetadata metadata = MetadataEntityUtil.metadataBuilder().
                 setData(retrievedData).
                 setVersoion(entity.getVersion()).
                 buildMetadata();
