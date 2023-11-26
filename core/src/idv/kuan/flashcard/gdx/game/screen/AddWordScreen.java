@@ -101,8 +101,11 @@ public class AddWordScreen implements Screen {
     private TextField.TextFieldStyle generateStyleWithFont(String userInput) {
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("GenJyuuGothic-Monospace-Normal.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = 12; // 字體大小
+        parameter.size = 16; // 字體大小
         parameter.characters = FreeTypeFontGenerator.DEFAULT_CHARS + userInput;
+        parameter.shadowOffsetX = 1; // 設置陰影的X軸偏移
+        parameter.shadowOffsetY = 1; // 設置陰影的Y軸偏移
+        parameter.shadowColor = new Color(0, 0, 0, 0.75f); // 設置陰影顏色和透明度
         BitmapFont font = generator.generateFont(parameter);
         generator.dispose(); // 不要忘記釋放資源
 
@@ -112,6 +115,8 @@ public class AddWordScreen implements Screen {
         textFieldStyle.background = skin.getDrawable("textfield");
         textFieldStyle.cursor = skin.getDrawable("cursor");
         textFieldStyle.selection = skin.getDrawable("selection");
+
+
 
         return textFieldStyle;
     }
