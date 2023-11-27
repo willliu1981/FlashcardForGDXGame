@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
@@ -28,6 +29,8 @@ public class MainScreen implements Screen {
     private Stage stage;
     Viewport viewport;
 
+    public static Skin skin;
+
     private static VersionHelper versionHelper;
     SpriteBatch batch;
     Texture img;
@@ -40,6 +43,10 @@ public class MainScreen implements Screen {
     }
 
     public MainScreen(Game game, VersionHelper versionHelper) {
+        if (skin == null) {
+            skin = new Skin(Gdx.files.internal("uiskin.json"));
+
+        }
         this.game = game;
         this.versionHelper = versionHelper;
         batch = new SpriteBatch();
@@ -77,7 +84,9 @@ public class MainScreen implements Screen {
         });
 
 
-        textField = new TextField("Word FlashCard",skin);
+        //Label title = new Label("Word FlashCard");
+
+        textField = new TextField("Word FlashCard", skin);
         textField.setPosition(50, 300);
         textField.setSize(700, 50);
 

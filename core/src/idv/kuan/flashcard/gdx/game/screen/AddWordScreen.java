@@ -3,20 +3,18 @@ package idv.kuan.flashcard.gdx.game.screen;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+
+import idv.kuan.flashcard.gdx.game.util.TextFieldStyleUtil;
 
 public class AddWordScreen implements Screen {
     Game game;
@@ -25,9 +23,8 @@ public class AddWordScreen implements Screen {
 
     SpriteBatch batch;
     Texture img;
-    Skin skin;
 
-    TextField textField;
+    TextField txtfTerm;
     TextField testTextField;
 
     public AddWordScreen(Game game) {
@@ -41,12 +38,7 @@ public class AddWordScreen implements Screen {
         Gdx.input.setInputProcessor(stage);
 
 
-        skin = new Skin(Gdx.files.internal("uiskin.json"));
-
-        TextField.TextFieldStyle textFieldStyle = generateStyleWithFont("");
-
-
-        TextButton btnAdd = new TextButton("Empty", skin);
+        TextButton btnAdd = new TextButton("Empty", MainScreen.skin);
         btnAdd.setPosition(150, 100);
         btnAdd.setSize(200, 50);
         btnAdd.addListener(new ChangeListener() {
@@ -57,7 +49,7 @@ public class AddWordScreen implements Screen {
             }
         });
 
-        TextButton btnList = new TextButton("Return", skin);
+        TextButton btnList = new TextButton("Return", MainScreen.skin);
         btnList.setPosition(400, 100);
         btnList.setSize(200, 50);
         btnList.addListener(new ChangeListener() {
@@ -68,58 +60,37 @@ public class AddWordScreen implements Screen {
             }
         });
 
-
-        textField = new TextField("Add Word", textFieldStyle);
-        textField.setPosition(50, 300);
-        textField.setSize(700, 50);
-        StringBuilder charactersToLoad = new StringBuilder();
-        textField.setTextFieldListener(new TextField.TextFieldListener() {
+        String placeholderText_termHint = "請輸入英文單字...";
+        TextField.TextFieldStyle textFieldStyle = TextFieldStyleUtil.generateCustomFontStyle(placeholderText_termHint);
+        txtfTerm = new TextField("", textFieldStyle);
+        txtfTerm.setPosition(50, 300);
+        txtfTerm.setSize(700, 50);
+        TextFieldStyleUtil.CharacterLoader characterLoader = new TextFieldStyleUtil.CharacterLoader();
+        characterLoader.add(placeholderText_termHint);
+        txtfTerm.setTextFieldListener(new TextField.TextFieldListener() {
             @Override
             public void keyTyped(TextField textField, char c) {
-                if (charactersToLoad.indexOf(String.valueOf(c)) < 0) { // 如果字符集中沒有該字符
-                    charactersToLoad.append(c); // 添加到字符集中
-                    textField.getStyle().font.dispose();
-                    TextField.TextFieldStyle Style = generateStyleWithFont(charactersToLoad.toString());
-                    textField.setStyle(Style);
-                }
+                TextFieldStyleUtil.refreshStyleOnInput(textField, c, characterLoader);
+
             }
         });
 
-        testTextField = new TextField("id", skin);
+        txtfTerm.setMessageText(placeholderText_termHint);
+
+
+        testTextField = new TextField("id", MainScreen.skin);
         testTextField.setPosition(50, 200);
         testTextField.setSize(700, 50);
 
 
         stage.addActor(btnAdd);
-        stage.addActor(textField);
+        stage.addActor(txtfTerm);
         stage.addActor(testTextField);
         stage.addActor(btnList);
 
 
     }
 
-    private TextField.TextFieldStyle generateStyleWithFont(String userInput) {
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("GenJyuuGothic-Monospace-Normal.ttf"));
-        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = 16; // 字體大小
-        parameter.characters = FreeTypeFontGenerator.DEFAULT_CHARS + userInput;
-        parameter.shadowOffsetX = 1; // 設置陰影的X軸偏移
-        parameter.shadowOffsetY = 1; // 設置陰影的Y軸偏移
-        parameter.shadowColor = new Color(0, 0, 0, 0.75f); // 設置陰影顏色和透明度
-        BitmapFont font = generator.generateFont(parameter);
-        generator.dispose(); // 不要忘記釋放資源
-
-        TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
-        textFieldStyle.font = font;
-        textFieldStyle.fontColor = Color.WHITE;
-        textFieldStyle.background = skin.getDrawable("textfield");
-        textFieldStyle.cursor = skin.getDrawable("cursor");
-        textFieldStyle.selection = skin.getDrawable("selection");
-
-
-
-        return textFieldStyle;
-    }
 
     @Override
     public void show() {
