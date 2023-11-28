@@ -10,25 +10,38 @@ import idv.kuan.flashcard.gdx.game.screen.MainScreen;
 
 public class TextFieldStyleUtil {
 
-    public static class CharacterLoader {
-        StringBuilder charactersToLoad = new StringBuilder();
 
-        public void add(String string) {
+    public static class DynamicCharacters {
+        StringBuilder characters = new StringBuilder();
+
+
+        public DynamicCharacters add(char c) {
+            return add(String.valueOf(c));
+        }
+
+        public DynamicCharacters add(String string) {
             for (char c : string.toCharArray()) {
-                if (charactersToLoad.indexOf(String.valueOf(c)) < 0) {
-                    charactersToLoad.append(c);
+                if (characters.indexOf(String.valueOf(c)) < 0) {
+                    characters.append(c);
+
                 }
             }
 
+            return this;
         }
+
 
         public String getCharacters() {
-            return charactersToLoad.toString();
+            return characters.toString();
         }
-
     }
 
-    public static TextField.TextFieldStyle generateCustomFontStyle(String userInput) {
+
+    public static TextField.TextFieldStyle generateDefaultDynamicFontTextFieldStyle() {
+        return generateDefaultDynamicFontTextFieldStyle("");
+    }
+
+    public static TextField.TextFieldStyle generateDefaultDynamicFontTextFieldStyle(String userInput) {
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("GenJyuuGothic-Monospace-Normal.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
         parameter.size = 16; // 字體大小
@@ -40,6 +53,7 @@ public class TextFieldStyleUtil {
         generator.dispose(); // 不要忘記釋放資源
 
         TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
+
         textFieldStyle.font = font;
         textFieldStyle.fontColor = Color.WHITE;
         textFieldStyle.background = MainScreen.skin.getDrawable("textfield");
@@ -48,16 +62,6 @@ public class TextFieldStyleUtil {
 
 
         return textFieldStyle;
-    }
-
-
-    public static void refreshStyleOnInput(TextField textField, char c, CharacterLoader charactersLoader) {
-        if (charactersLoader.charactersToLoad.indexOf(String.valueOf(c)) < 0) { // 如果字符集中沒有該字符
-            charactersLoader.charactersToLoad.append(c); // 添加到字符集中
-            textField.getStyle().font.dispose();
-            TextField.TextFieldStyle Style = TextFieldStyleUtil.generateCustomFontStyle(charactersLoader.getCharacters());
-            textField.setStyle(Style);
-        }
     }
 
 

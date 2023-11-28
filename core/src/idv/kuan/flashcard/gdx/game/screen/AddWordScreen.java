@@ -25,12 +25,15 @@ public class AddWordScreen implements Screen {
     Texture img;
 
     TextField txtfTerm;
-    TextField testTextField;
+    TextField txtfTranslation;
+    TextFieldStyleUtil.DynamicCharacters dynamicCharacters;
 
     public AddWordScreen(Game game) {
         this.game = game;
 
         batch = new SpriteBatch();
+        dynamicCharacters = new TextFieldStyleUtil.DynamicCharacters();
+        // dynamicCharacters = TextFieldStyleUtil.generateDefaultDynamicFontTextFieldStyle();
 
 
         viewport = new StretchViewport(800, 400);
@@ -60,32 +63,44 @@ public class AddWordScreen implements Screen {
             }
         });
 
-        String placeholderText_termHint = "請輸入英文單字...";
-        TextField.TextFieldStyle textFieldStyle = TextFieldStyleUtil.generateCustomFontStyle(placeholderText_termHint);
+        dynamicCharacters.add("請輸入英文單字...");
+        TextField.TextFieldStyle textFieldStyle = TextFieldStyleUtil.generateDefaultDynamicFontTextFieldStyle(this.dynamicCharacters.getCharacters());
+
         txtfTerm = new TextField("", textFieldStyle);
+        txtfTerm.setMessageText("請輸入英文單字...");
         txtfTerm.setPosition(50, 300);
         txtfTerm.setSize(700, 50);
-        TextFieldStyleUtil.CharacterLoader characterLoader = new TextFieldStyleUtil.CharacterLoader();
-        characterLoader.add(placeholderText_termHint);
         txtfTerm.setTextFieldListener(new TextField.TextFieldListener() {
             @Override
             public void keyTyped(TextField textField, char c) {
-                TextFieldStyleUtil.refreshStyleOnInput(textField, c, characterLoader);
+                AddWordScreen.this.dynamicCharacters.add(c);
+                TextField.TextFieldStyle textFieldStyle = TextFieldStyleUtil.generateDefaultDynamicFontTextFieldStyle(AddWordScreen.this.dynamicCharacters.getCharacters());
+                textField.setStyle(textFieldStyle);
+
 
             }
         });
 
-        txtfTerm.setMessageText(placeholderText_termHint);
+        dynamicCharacters.add("請輸入中文翻譯...");
+        textFieldStyle = TextFieldStyleUtil.generateDefaultDynamicFontTextFieldStyle(this.dynamicCharacters.getCharacters());
 
-
-        testTextField = new TextField("id", MainScreen.skin);
-        testTextField.setPosition(50, 200);
-        testTextField.setSize(700, 50);
+        txtfTranslation = new TextField("", textFieldStyle);
+        txtfTranslation.setMessageText("請輸入中文翻譯...");
+        txtfTranslation.setPosition(50, 200);
+        txtfTranslation.setSize(700, 50);
+        txtfTranslation.setTextFieldListener(new TextField.TextFieldListener() {
+            @Override
+            public void keyTyped(TextField textField, char c) {
+                AddWordScreen.this.dynamicCharacters.add(c);
+                TextField.TextFieldStyle textFieldStyle = TextFieldStyleUtil.generateDefaultDynamicFontTextFieldStyle(AddWordScreen.this.dynamicCharacters.getCharacters());
+                textField.setStyle(textFieldStyle);
+            }
+        });
 
 
         stage.addActor(btnAdd);
         stage.addActor(txtfTerm);
-        stage.addActor(testTextField);
+        stage.addActor(txtfTranslation);
         stage.addActor(btnList);
 
 
