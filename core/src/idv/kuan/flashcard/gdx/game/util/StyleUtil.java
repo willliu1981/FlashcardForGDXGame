@@ -4,11 +4,17 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 
 import idv.kuan.flashcard.gdx.game.screen.MainScreen;
 
-public class TextFieldStyleUtil {
+public class StyleUtil {
+
+    interface Style {
+
+    }
 
 
     public static class DynamicCharacters {
@@ -37,11 +43,7 @@ public class TextFieldStyleUtil {
     }
 
 
-    public static TextField.TextFieldStyle generateDefaultDynamicFontTextFieldStyle() {
-        return generateDefaultDynamicFontTextFieldStyle("");
-    }
-
-    public static TextField.TextFieldStyle generateDefaultDynamicFontTextFieldStyle(String userInput) {
+    public static BitmapFont generateDefaultDynamicFont(String userInput) {
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("GenJyuuGothic-Monospace-Normal.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
         parameter.size = 16; // 字體大小
@@ -51,7 +53,11 @@ public class TextFieldStyleUtil {
         parameter.shadowColor = new Color(0, 0, 0, 0.75f); // 設置陰影顏色和透明度
         BitmapFont font = generator.generateFont(parameter);
         generator.dispose(); // 不要忘記釋放資源
+        return font;
+    }
 
+
+    public static TextField.TextFieldStyle generateDefaultTextFieldStyle(BitmapFont font) {
         TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
 
         textFieldStyle.font = font;
@@ -62,6 +68,18 @@ public class TextFieldStyleUtil {
 
 
         return textFieldStyle;
+    }
+
+    public static TextButton.TextButtonStyle generateDefaultButtonStyle(BitmapFont font) {
+        TextButton.TextButtonStyle textButtonStyle = new TextButton.TextButtonStyle();
+        textButtonStyle.font = font;
+        textButtonStyle.fontColor = Color.WHITE;
+        textButtonStyle.up = MainScreen.skin.newDrawable("default-round");  // 按鈕未按下時的背景
+        textButtonStyle.down = MainScreen.skin.newDrawable("default-round-down");  // 按鈕按下時的背景
+        textButtonStyle.over = MainScreen.skin.newDrawable("default-round");  // 滑鼠懸停時的背景
+
+
+        return textButtonStyle;
     }
 
 
