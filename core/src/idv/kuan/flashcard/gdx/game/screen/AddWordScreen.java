@@ -17,6 +17,7 @@ import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Date;
 
 import idv.kuan.flashcard.gdx.game.database.dao.WordDao;
@@ -68,11 +69,11 @@ public class AddWordScreen implements Screen {
                 word.setTranslation(txtfTranslation.getText());
                 word.setVersion(1);
 
-                //MetadataEntityUtil.DefaultMetadata metadata = word.getMetadata();
-                //metadata.setData("1234-" + date);
-                MetadataEntityUtil.DefaultMetadata metadata1 = new TestMetadata();
-                metadata1.addMetadataObject("msg", new MetadataEntityUtil.MetadataObject("v1"));
-
+                MetadataEntityUtil.DefaultMetadata metadata = new TestMetadata();
+                metadata.addDataObject("msg", new MetadataEntityUtil.DataObject("v1"));
+                metadata.setAtCreated(new Timestamp(new Date().getTime()+1000000));
+                metadata.setAtUpdated(new Timestamp(new Date().getTime()));
+                word.setMetadata(metadata);
 
                 try {
                     dao.create(word);

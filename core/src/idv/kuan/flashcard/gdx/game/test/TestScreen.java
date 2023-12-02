@@ -76,7 +76,7 @@ public class TestScreen implements Screen {
                 MetadataEntityUtil.DefaultMetadata metadata = word.getMetadata();
                 //metadata.setData("1234-" + date);
                 MetadataEntityUtil.DefaultMetadata metadata1 = new TestMetadata();
-                metadata1.addMetadataObject("msg", new MetadataEntityUtil.MetadataObject("v1"));
+                metadata1.addDataObject("msg", new MetadataEntityUtil.DataObject("v1"));
 
 
                 try {

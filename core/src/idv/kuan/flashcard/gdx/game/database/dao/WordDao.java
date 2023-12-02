@@ -2,6 +2,7 @@ package idv.kuan.flashcard.gdx.game.database.dao;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 
 import idv.kuan.flashcard.gdx.game.database.entity.Word;
 import idv.kuan.libs.databases.QueryBuilder;
@@ -25,6 +26,13 @@ public class WordDao extends CommonDao<Word> {
         //metadata
         byte[] dataToSave = MetadataEntityUtil.serializeMetadata(entity.getMetadata());
         builder.addColumnValue("metadata", dataToSave);
+        Object data = entity.getMetadata().getDataObject(MetadataEntityUtil.DefaultMetadata.ATCREATED).getData();
+        System.out.println("xxx WD: " + data);
+
+        Timestamp atCreated = (Timestamp) entity.getMetadata().getDataObject(MetadataEntityUtil.DefaultMetadata.ATCREATED).getData();
+        Timestamp atUpdated = (Timestamp) entity.getMetadata().getDataObject(MetadataEntityUtil.DefaultMetadata.ATUPDATED).getData();
+        builder.addColumnValue("at_created", atCreated.toString());
+        builder.addColumnValue("at_updated", atUpdated.toString());
     }
 
     @Override
@@ -38,7 +46,7 @@ public class WordDao extends CommonDao<Word> {
                 setData(retrievedData).
                 setVersoion(entity.getVersion()).
                 buildMetadata();
-        //entity.setMetadata(metadata);
+        entity.setMetadata(metadata);
     }
 
     @Override
