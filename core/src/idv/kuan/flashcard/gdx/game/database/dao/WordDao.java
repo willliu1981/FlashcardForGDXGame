@@ -26,13 +26,12 @@ public class WordDao extends CommonDao<Word> {
         //metadata
         byte[] dataToSave = MetadataEntityUtil.serializeMetadata(entity.getMetadata());
         builder.addColumnValue("metadata", dataToSave);
-        Object data = entity.getMetadata().getDataObject(MetadataEntityUtil.DefaultMetadata.ATCREATED).getData();
-        System.out.println("xxx WD: " + data);
 
-        Timestamp atCreated = (Timestamp) entity.getMetadata().getDataObject(MetadataEntityUtil.DefaultMetadata.ATCREATED).getData();
-        Timestamp atUpdated = (Timestamp) entity.getMetadata().getDataObject(MetadataEntityUtil.DefaultMetadata.ATUPDATED).getData();
-        builder.addColumnValue("at_created", atCreated.toString());
-        builder.addColumnValue("at_updated", atUpdated.toString());
+
+        //Timestamp atCreated = (Timestamp) entity.getMetadata().getDataObject(MetadataEntityUtil.DefaultMetadata.ATCREATED).getData();
+        //Timestamp atUpdated = (Timestamp) entity.getMetadata().getDataObject(MetadataEntityUtil.DefaultMetadata.ATUPDATED).getData();
+        //builder.addColumnValue("at_created", atCreated.toString());
+        //builder.addColumnValue("at_updated", atUpdated.toString());
     }
 
     @Override

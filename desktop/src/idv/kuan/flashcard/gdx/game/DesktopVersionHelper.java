@@ -8,7 +8,7 @@
                 }
 
                 public int getVersionCode() {
-                    return 28;
+                    return 29;
                 }
         }
         

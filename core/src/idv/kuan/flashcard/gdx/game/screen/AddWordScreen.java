@@ -31,8 +31,6 @@ public class AddWordScreen implements Screen {
     private Stage stage;
     Viewport viewport;
 
-    SpriteBatch batch;
-    Texture img;
 
     TextField txtfTerm;
     TextField txtfTranslation;
@@ -41,15 +39,16 @@ public class AddWordScreen implements Screen {
     public AddWordScreen(Game game) {
         this.game = game;
 
-        batch = new SpriteBatch();
+        viewport = new StretchViewport(800, 400);
+        stage = new Stage(viewport);
+        Gdx.input.setInputProcessor(stage);
+
+
         dynamicCharacters = new StyleUtil.DynamicCharacters();
         BitmapFont font = null;
         TextField.TextFieldStyle textFieldStyle;
         Button.ButtonStyle buttonStyle;
 
-        viewport = new StretchViewport(800, 400);
-        stage = new Stage(viewport);
-        Gdx.input.setInputProcessor(stage);
 
         dynamicCharacters.add("新增...");
         font = StyleUtil.generateDefaultDynamicFont(this.dynamicCharacters.getCharacters());
@@ -71,7 +70,7 @@ public class AddWordScreen implements Screen {
 
                 MetadataEntityUtil.DefaultMetadata metadata = new TestMetadata();
                 metadata.addDataObject("msg", new MetadataEntityUtil.DataObject("v1"));
-                metadata.setAtCreated(new Timestamp(new Date().getTime()+1000000));
+                metadata.setAtCreated(new Timestamp(new Date().getTime() + 1000000));
                 metadata.setAtUpdated(new Timestamp(new Date().getTime()));
                 word.setMetadata(metadata);
 
@@ -92,7 +91,7 @@ public class AddWordScreen implements Screen {
         btnReturn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                game.setScreen(new MainScreen(game));
+                game.setScreen(new WordListScreen(game));
 
             }
         });
@@ -183,8 +182,6 @@ public class AddWordScreen implements Screen {
 
     @Override
     public void dispose() {
-        batch.dispose();
-        //img.dispose();
         stage.dispose();
     }
 

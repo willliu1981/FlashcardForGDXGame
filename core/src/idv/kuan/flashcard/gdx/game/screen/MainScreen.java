@@ -125,14 +125,14 @@ public class MainScreen implements Screen {
                         " \"id\" INTEGER NOT NULL UNIQUE, " +
                         " \"term\" TEXT NOT NULL, " +
                         " \"translation\" TEXT NOT NULL, " +
-                        " \"at_created\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
-                        " \"at_updated\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
+                        //" \"at_created\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
+                        //" \"at_updated\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
                         " \"version\" INTEGER NOT NULL, " +
                         " \"metadata\" BLOB, " +
                         " PRIMARY KEY(\"id\" AUTOINCREMENT) " +
                         ")").setTableName("word").createSchemaModifier(TableSchemaModifier.class);
-                word.setNewColumns("id,term,translation,at_created,at_updated,version,metadata");
-                word.setOldColumns("id,term,translation,at_created,at_updated,-1,metadata");
+                word.setNewColumns("id,term,translation,version,metadata");
+                word.setOldColumns("id,term,translation,-1,metadata");
 
                 modifiers.add(word);
             }
