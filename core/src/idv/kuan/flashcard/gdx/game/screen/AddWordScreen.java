@@ -47,9 +47,9 @@ public class AddWordScreen implements Screen {
         dynamicCharacters = new StyleUtil.DynamicCharacters();
         BitmapFont font = null;
         TextField.TextFieldStyle textFieldStyle;
-        Button.ButtonStyle buttonStyle;
 
 
+        //add word
         dynamicCharacters.add("新增...");
         font = StyleUtil.generateDefaultDynamicFont(this.dynamicCharacters.getCharacters());
         TextButton.TextButtonStyle textButtonStyle = StyleUtil.generateDefaultButtonStyle(font);
@@ -76,6 +76,8 @@ public class AddWordScreen implements Screen {
 
                 try {
                     dao.create(word);
+
+                    game.setScreen(new WordListScreen(game));
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -91,7 +93,7 @@ public class AddWordScreen implements Screen {
         btnReturn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                game.setScreen(new WordListScreen(game));
+                game.setScreen(new MainScreen(game));
 
             }
         });

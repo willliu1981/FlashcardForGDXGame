@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
@@ -16,15 +17,27 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import java.sql.SQLException;
+import java.util.List;
+
+import idv.kuan.flashcard.gdx.game.database.dao.WordDao;
+import idv.kuan.flashcard.gdx.game.database.entity.Word;
+import idv.kuan.flashcard.gdx.game.util.StyleUtil;
+
 public class WordListScreen implements Screen {
     Game game;
     private Stage stage;
     Viewport viewport;
 
     TextureRegion checkedNotCheckedRegion;
+    TextureRegion checkedNotCheckedClickedRegion;
     TextureRegion checkedCheckedRegion;
+    TextureRegion checkedClickedRegion;
     TextureRegion editRegion;
     TextureRegion editClickedRegion;
+
+    StyleUtil.DynamicCharacters dynamicCharacters;
+    BitmapFont font;
 
     public WordListScreen(Game game) {
         this.game = game;
@@ -33,6 +46,8 @@ public class WordListScreen implements Screen {
         stage = new Stage(viewport);
         Gdx.input.setInputProcessor(stage);
 
+        dynamicCharacters = new StyleUtil.DynamicCharacters();
+
 
 // 創建一個表格布局您的元素
         Table table = new Table();
@@ -40,38 +55,57 @@ public class WordListScreen implements Screen {
 
         // 加載圖片資源
         checkedNotCheckedRegion = new TextureRegion(new Texture("checkedboxnotchecked128.png"));
+        checkedNotCheckedClickedRegion = new TextureRegion(new Texture("checkedboxnotcheckedclicked128.png"));
         checkedCheckedRegion = new TextureRegion(new Texture("checkedbox128.png"));
+        checkedClickedRegion = new TextureRegion(new Texture("checkedboxclicked128.png"));
         editRegion = new TextureRegion(new Texture("edit128.png"));
         editClickedRegion = new TextureRegion(new Texture("editclicked128.png"));
 
-        for (int i = 0; i < 10; i++) {
-            // ... 省略其他代碼 ...
-
-            ImageButton.ImageButtonStyle checkedboxStyle = new ImageButton.ImageButtonStyle();
-            checkedboxStyle.up = new TextureRegionDrawable(checkedNotCheckedRegion); // 未選中時的圖片
-            checkedboxStyle.down = new TextureRegionDrawable(checkedCheckedRegion); // 選中時的圖片
-
-
-            final ImageButton checkedButton = new ImageButton(checkedboxStyle);
-
-
-            Label termLabel = new Label("term_" + i, MainScreen.skin);
-            Label translationLabel = new Label("translation_" + i, MainScreen.skin);
-
-            ImageButton.ImageButtonStyle editStyle = new ImageButton.ImageButtonStyle();
-            editStyle.up = new TextureRegionDrawable(editRegion); // 未點擊時的圖片
-            editStyle.down = new TextureRegionDrawable(editClickedRegion); // 點擊時的圖片
-
-            final ImageButton editButton = new ImageButton(editStyle);
+        WordDao dao = new WordDao();
+        try {
+            List<Word> all = dao.findAll();
+            int i = 0;
+            for (Word w : all) {
+                ImageButton.ImageButtonStyle checkedboxStyle = new ImageButton.ImageButtonStyle();
+                checkedboxStyle.up = new TextureRegionDrawable(checkedNotCheckedRegion); // 未選中時的圖片
+                checkedboxStyle.down = new TextureRegionDrawable(checkedNotCheckedClickedRegion); // 選中時的圖片
 
 
-            table.add(checkedButton).size(25,50);
-            table.add(termLabel).width(200);
-            table.add(translationLabel).width(200);
-            table.add(editButton).size(50);
+                final ImageButton checkedButton = new ImageButton(checkedboxStyle);
 
-            table.row();
+                Label idxLabel = new Label(String.valueOf(i), MainScreen.skin);
 
+                //term
+                Label termLabel = new Label(w != null ? w.getTerm() : null, MainScreen.skin);
+
+                //translation
+                String translation = w != null ? w.getTranslation() : "N/A";
+                dynamicCharacters.add(translation);
+                font = StyleUtil.generateDefaultDynamicFont(this.dynamicCharacters.getCharacters());
+                Label.LabelStyle style = StyleUtil.generateDefaultLabelStyle(font);
+
+                Label translationLabel = new Label(w != null ? w.getTranslation() : null, style);
+
+                ImageButton.ImageButtonStyle editStyle = new ImageButton.ImageButtonStyle();
+                editStyle.up = new TextureRegionDrawable(editRegion); // 未點擊時的圖片
+                editStyle.down = new TextureRegionDrawable(editClickedRegion); // 點擊時的圖片
+
+                final ImageButton editButton = new ImageButton(editStyle);
+
+                i++;
+
+                table.add(idxLabel).width(10).padRight(10);
+                table.add(checkedButton).size(25, 50);
+                table.add(termLabel).width(200).padLeft(10);
+                table.add(translationLabel).width(200);
+                table.add(editButton).size(50);
+
+                table.row().pad(5);
+            }
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
 
