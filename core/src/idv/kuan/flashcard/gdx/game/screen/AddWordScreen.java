@@ -41,7 +41,6 @@ public class AddWordScreen implements Screen {
 
         viewport = new StretchViewport(800, 400);
         stage = new Stage(viewport);
-        Gdx.input.setInputProcessor(stage);
 
 
         dynamicCharacters = new StyleUtil.DynamicCharacters();
@@ -77,7 +76,7 @@ public class AddWordScreen implements Screen {
                 try {
                     dao.create(word);
 
-                    game.setScreen(new WordListScreen(game));
+                    game.setScreen(new WordListScreen(game, AddWordScreen.this));
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -149,7 +148,7 @@ public class AddWordScreen implements Screen {
 
     @Override
     public void show() {
-
+        Gdx.input.setInputProcessor(stage);
     }
 
     @Override

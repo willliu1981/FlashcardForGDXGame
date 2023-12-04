@@ -7,12 +7,14 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -40,11 +42,14 @@ public class WordListScreen implements Screen {
     BitmapFont font;
 
     public WordListScreen(Game game) {
+        this(game, null);
+    }
+
+    public WordListScreen(Game game, Screen lastScreen) {
         this.game = game;
 
         viewport = new StretchViewport(800, 400);
         stage = new Stage(viewport);
-        Gdx.input.setInputProcessor(stage);
 
         dynamicCharacters = new StyleUtil.DynamicCharacters();
 
@@ -79,8 +84,9 @@ public class WordListScreen implements Screen {
                 Label termLabel = new Label(w != null ? w.getTerm() : null, MainScreen.skin);
 
                 //translation
-                String translation = w != null ? w.getTranslation() : "N/A";
-                dynamicCharacters.add(translation);
+                if (w != null) {
+                    dynamicCharacters.add(w.getTranslation());
+                }
                 font = StyleUtil.generateDefaultDynamicFont(this.dynamicCharacters.getCharacters());
                 Label.LabelStyle style = StyleUtil.generateDefaultLabelStyle(font);
 
@@ -113,17 +119,34 @@ public class WordListScreen implements Screen {
         ScrollPane scrollPane = new ScrollPane(table, MainScreen.skin);
 
 // 設定 ScrollPane 的大小和位置
-        scrollPane.setBounds(50, 50, 600, 300);
+        scrollPane.setBounds(50, 70, 600, 300);
+
+        TextButton returnButton = new TextButton("return", MainScreen.skin);
+        returnButton.setBounds(50, 10, 200, 50);
+        returnButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (lastScreen != null) {
+                    if (AddWordScreen.class.isInstance(lastScreen)) {
+                        game.setScreen(lastScreen);
+                    }
+                } else {
+                    game.setScreen(new MainScreen(game));
+                }
+            }
+        });
+
 
 // 將 ScrollPane 添加到 Stage
         stage.addActor(scrollPane);
+        stage.addActor(returnButton);
 
     }
 
 
     @Override
     public void show() {
-
+        Gdx.input.setInputProcessor(stage);
     }
 
     @Override
@@ -158,9 +181,13 @@ public class WordListScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
+        // 释放所有纹理
         checkedNotCheckedRegion.getTexture().dispose();
+        checkedNotCheckedClickedRegion.getTexture().dispose(); // 添加这行
         checkedCheckedRegion.getTexture().dispose();
+        checkedClickedRegion.getTexture().dispose(); // 添加这行
         editRegion.getTexture().dispose();
         editClickedRegion.getTexture().dispose();
     }
+
 }

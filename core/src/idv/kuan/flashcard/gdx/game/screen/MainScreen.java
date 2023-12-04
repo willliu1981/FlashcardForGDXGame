@@ -55,7 +55,6 @@ public class MainScreen implements Screen {
 
         viewport = new StretchViewport(800, 400);
         stage = new Stage(viewport);
-        Gdx.input.setInputProcessor(stage);
 
 
         Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
@@ -78,7 +77,7 @@ public class MainScreen implements Screen {
         btnList.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-
+                game.setScreen(new WordListScreen(game));
 
             }
         });
@@ -104,6 +103,7 @@ public class MainScreen implements Screen {
 
     @Override
     public void show() {
+        Gdx.input.setInputProcessor(stage);
 
     }
 
