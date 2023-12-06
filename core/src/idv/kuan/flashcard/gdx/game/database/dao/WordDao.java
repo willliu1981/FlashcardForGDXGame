@@ -33,6 +33,7 @@ public class WordDao extends CommonDao<Word> {
 
     @Override
     protected void mapResultSetToEntity(Word entity, ResultSet resultSet) throws SQLException {
+        entity.setId(resultSet.getInt("id"));
         entity.setTerm(resultSet.getString("term"));
         entity.setTranslation(resultSet.getString("translation"));
         entity.setVersion(resultSet.getInt("version"));

@@ -16,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
@@ -36,7 +37,7 @@ public class WordListScreen implements Screen {
 
     TextureRegion checkedNotCheckedRegion;
     TextureRegion checkedNotCheckedClickedRegion;
-    TextureRegion checkedCheckedRegion;
+    TextureRegion checkedRegion;
     TextureRegion checkedClickedRegion;
     TextureRegion editRegion;
     TextureRegion editClickedRegion;
@@ -63,10 +64,10 @@ public class WordListScreen implements Screen {
         //table.setFillParent(true);
 
         // 加載圖片資源
-        checkedNotCheckedRegion = new TextureRegion(new Texture("checkedboxnotchecked128.png"));
-        checkedNotCheckedClickedRegion = new TextureRegion(new Texture("checkedboxnotcheckedclicked128.png"));
-        checkedCheckedRegion = new TextureRegion(new Texture("checkedbox128.png"));
-        checkedClickedRegion = new TextureRegion(new Texture("checkedboxclicked128.png"));
+        checkedNotCheckedRegion = new TextureRegion(new Texture("checkedboxnotchecked128t.png"));
+        checkedNotCheckedClickedRegion = new TextureRegion(new Texture("checkedboxnotcheckedclicked128t.png"));
+        checkedRegion = new TextureRegion(new Texture("checkedbox128t.png"));
+        checkedClickedRegion = new TextureRegion(new Texture("checkedboxclicked128t.png"));
         editRegion = new TextureRegion(new Texture("edit128.png"));
         editClickedRegion = new TextureRegion(new Texture("editclicked128.png"));
         separatorRegion = new TextureRegion(new Texture("separator.png"));
@@ -75,14 +76,20 @@ public class WordListScreen implements Screen {
         WordDao dao = new WordDao();
         try {
             List<Word> all = dao.findAll();
-            int i = 0;
+            int i = 1;
             for (Word w : all) {
                 Table elementTable = new Table();
                 Label.LabelStyle labelStyle = StyleUtil.generateDefaultLabelStyle(font);
 
                 ImageButton.ImageButtonStyle checkedboxStyle = new ImageButton.ImageButtonStyle();
-                checkedboxStyle.up = new TextureRegionDrawable(checkedNotCheckedRegion); // 未選中時的圖片
-                checkedboxStyle.down = new TextureRegionDrawable(checkedNotCheckedClickedRegion); // 選中時的圖片
+                if (i % 5 == 0) {
+                    checkedboxStyle.up = new TextureRegionDrawable(checkedNotCheckedRegion); // 未選中時的圖片
+                    checkedboxStyle.down = new TextureRegionDrawable(checkedNotCheckedClickedRegion); // 選中時的圖片
+
+                } else {
+                    checkedboxStyle.up = new TextureRegionDrawable(checkedRegion); // 未選中時的圖片
+                    checkedboxStyle.down = new TextureRegionDrawable(checkedClickedRegion); // 選中時的圖片
+                }
                 final ImageButton checkedButton = new ImageButton(checkedboxStyle);
 
                 Label idxLabel = new Label(String.valueOf(i), MainScreen.skin);
@@ -118,6 +125,17 @@ public class WordListScreen implements Screen {
 
                 final ImageButton editButton = new ImageButton(editStyle);
 
+                //----------button click listener begin------------//
+                editButton.addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ChangeEvent event, Actor actor) {
+                        game.setScreen(new EditWordScreen(game, w));
+
+                    }
+                });
+
+                //----------button click listener  end------------//
+
                 i++;
 
                 Table textsTable = new Table();
@@ -137,6 +155,7 @@ public class WordListScreen implements Screen {
                 table.row().pad(2);
                 table.add(separator).size(500, 5);
                 table.row().pad(2);
+
 
 
             }
@@ -216,7 +235,7 @@ public class WordListScreen implements Screen {
         // 释放所有纹理
         checkedNotCheckedRegion.getTexture().dispose();
         checkedNotCheckedClickedRegion.getTexture().dispose(); // 添加这行
-        checkedCheckedRegion.getTexture().dispose();
+        checkedRegion.getTexture().dispose();
         checkedClickedRegion.getTexture().dispose(); // 添加这行
         editRegion.getTexture().dispose();
         editClickedRegion.getTexture().dispose();
