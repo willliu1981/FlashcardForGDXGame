@@ -1,11 +1,13 @@
 package idv.kuan.flashcard.gdx.game.database.entity;
 
+import java.sql.Timestamp;
+
 import idv.kuan.libs.databases.models.MetadataEntity;
 
 public class Word extends MetadataEntity {
 
-    private  String  term;
-    private  String translation;
+    private String term;
+    private String translation;
 
 
     public String getTerm() {
@@ -33,4 +35,6 @@ public class Word extends MetadataEntity {
                 ", metadata=" + metadata +
                 '}';
     }
+
+
 }

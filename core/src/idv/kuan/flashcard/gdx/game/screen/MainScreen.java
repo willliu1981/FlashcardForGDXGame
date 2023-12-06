@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
@@ -35,8 +34,8 @@ public class MainScreen implements Screen {
     SpriteBatch batch;
     Texture img;
 
-    TextField textField;
-    TextField testTextField;
+    TextField txtfTitle;
+    TextField txtfCount;
 
     public MainScreen(Game game) {
         this(game, versionHelper);
@@ -85,19 +84,19 @@ public class MainScreen implements Screen {
 
         //Label title = new Label("Word FlashCard");
 
-        textField = new TextField("Word FlashCard", skin);
-        textField.setPosition(50, 300);
-        textField.setSize(700, 50);
+        txtfTitle = new TextField("Word FlashCard", skin);
+        txtfTitle.setPosition(50, 300);
+        txtfTitle.setSize(700, 50);
+        txtfTitle.setDisabled(true);
 
-
-        testTextField = new TextField("count:0", skin);
-        testTextField.setPosition(50, 200);
-        testTextField.setSize(700, 50);
-
+        txtfCount = new TextField("count:0", skin);
+        txtfCount.setPosition(50, 200);
+        txtfCount.setSize(700, 50);
+        txtfCount.setDisabled(true);
 
         stage.addActor(btnAdd);
-        stage.addActor(textField);
-        stage.addActor(testTextField);
+        stage.addActor(txtfTitle);
+        stage.addActor(txtfCount);
         stage.addActor(btnList);
     }
 
@@ -125,8 +124,6 @@ public class MainScreen implements Screen {
                         " \"id\" INTEGER NOT NULL UNIQUE, " +
                         " \"term\" TEXT NOT NULL, " +
                         " \"translation\" TEXT NOT NULL, " +
-                        //" \"at_created\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
-                        //" \"at_updated\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
                         " \"version\" INTEGER NOT NULL, " +
                         " \"metadata\" BLOB, " +
                         " PRIMARY KEY(\"id\" AUTOINCREMENT) " +

@@ -44,11 +44,15 @@ public class StyleUtil {
 
 
     public static BitmapFont generateDefaultDynamicFont(String userInput) {
+        return generateDefaultDynamicFont(userInput, 16);
+    }
+
+    public static BitmapFont generateDefaultDynamicFont(String userInput, int fontSize) {
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("GenJyuuGothic-Monospace-Normal.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = 16; // 字體大小
+        parameter.size = fontSize; // 字體大小
         parameter.characters = FreeTypeFontGenerator.DEFAULT_CHARS + userInput;
-        parameter.shadowOffsetX = 1; // 設置陰影的X軸偏移
+        parameter.shadowOffsetX = -1; // 設置陰影的X軸偏移
         parameter.shadowOffsetY = 1; // 設置陰影的Y軸偏移
         parameter.shadowColor = new Color(0, 0, 0, 0.75f); // 設置陰影顏色和透明度
         BitmapFont font = generator.generateFont(parameter);

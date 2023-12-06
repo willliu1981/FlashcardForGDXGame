@@ -4,12 +4,10 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
@@ -33,6 +31,7 @@ public class AddWordScreen implements Screen {
 
 
     TextField txtfTerm;
+    TextField txtfExtraData;
     TextField txtfTranslation;
     StyleUtil.DynamicCharacters dynamicCharacters;
 
@@ -45,8 +44,68 @@ public class AddWordScreen implements Screen {
 
         dynamicCharacters = new StyleUtil.DynamicCharacters();
         BitmapFont font = null;
+
+        //==================== Text 開始 ====================//
         TextField.TextFieldStyle textFieldStyle;
 
+        //term
+        dynamicCharacters.add("請輸入英文單字...");
+        font = StyleUtil.generateDefaultDynamicFont(this.dynamicCharacters.getCharacters());
+        textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font);
+
+        txtfTerm = new TextField("", textFieldStyle);
+        txtfTerm.setMessageText("請輸入英文單字...");
+        txtfTerm.setTextFieldListener(new TextField.TextFieldListener() {
+            @Override
+            public void keyTyped(TextField textField, char c) {
+                AddWordScreen.this.dynamicCharacters.add(c);
+                BitmapFont font1 = StyleUtil.generateDefaultDynamicFont(dynamicCharacters.getCharacters());
+                TextField.TextFieldStyle textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font1);
+                textField.setStyle(textFieldStyle);
+
+            }
+        });
+
+        //translation
+        dynamicCharacters.add("請輸入中文翻譯...");
+        font = StyleUtil.generateDefaultDynamicFont(this.dynamicCharacters.getCharacters());
+        textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font);
+
+        txtfTranslation = new TextField("", textFieldStyle);
+        txtfTranslation.setMessageText("請輸入中文翻譯...");
+        txtfTranslation.setTextFieldListener(new TextField.TextFieldListener() {
+            @Override
+            public void keyTyped(TextField textField, char c) {
+                AddWordScreen.this.dynamicCharacters.add(c);
+                BitmapFont font1 = StyleUtil.generateDefaultDynamicFont(dynamicCharacters.getCharacters());
+                TextField.TextFieldStyle textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font1);
+                textField.setStyle(textFieldStyle);
+
+            }
+        });
+
+        //extra data
+        dynamicCharacters.add("請輸入額外資料...");
+        font = StyleUtil.generateDefaultDynamicFont(this.dynamicCharacters.getCharacters());
+        textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font);
+
+        txtfExtraData = new TextField("", textFieldStyle);
+        txtfExtraData.setMessageText("請輸入額外資料...");
+        txtfExtraData.setTextFieldListener(new TextField.TextFieldListener() {
+            @Override
+            public void keyTyped(TextField textField, char c) {
+                AddWordScreen.this.dynamicCharacters.add(c);
+                BitmapFont font1 = StyleUtil.generateDefaultDynamicFont(dynamicCharacters.getCharacters());
+                TextField.TextFieldStyle textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font1);
+                textField.setStyle(textFieldStyle);
+
+            }
+        });
+
+        //==================== Text 結束 ====================//
+
+
+        //--------------- Button 開始 ---------------//
 
         //add word
         dynamicCharacters.add("新增...");
@@ -54,22 +113,20 @@ public class AddWordScreen implements Screen {
         TextButton.TextButtonStyle textButtonStyle = StyleUtil.generateDefaultButtonStyle(font);
 
         TextButton btnAdd = new TextButton("新增", textButtonStyle);
-        btnAdd.setPosition(150, 100);
-        btnAdd.setSize(200, 50);
         btnAdd.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 WordDao dao = new WordDao();
                 Word word = new Word();
 
-                Date date = new Date();
                 word.setTerm(txtfTerm.getText());
                 word.setTranslation(txtfTranslation.getText());
                 word.setVersion(1);
 
                 MetadataEntityUtil.DefaultMetadata metadata = new TestMetadata();
-                metadata.addDataObject("msg", new MetadataEntityUtil.DataObject("v1"));
-                metadata.setAtCreated(new Timestamp(new Date().getTime() + 1000000));
+                metadata.addDataObject(TestMetadata.EXTRA_DATA, new MetadataEntityUtil.DataObject
+                        ("n_" + txtfExtraData.getText()).setData(txtfExtraData.getText()));
+                metadata.setAtCreated(new Timestamp(new Date().getTime()));
                 metadata.setAtUpdated(new Timestamp(new Date().getTime()));
                 word.setMetadata(metadata);
 
@@ -86,9 +143,8 @@ public class AddWordScreen implements Screen {
         });
 
 
+        //return
         TextButton btnReturn = new TextButton("Return", MainScreen.skin);
-        btnReturn.setPosition(400, 100);
-        btnReturn.setSize(200, 50);
         btnReturn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -97,50 +153,22 @@ public class AddWordScreen implements Screen {
             }
         });
 
+        //--------------- Button 結束 ---------------//
 
-        dynamicCharacters.add("請輸入英文單字...");
-        font = StyleUtil.generateDefaultDynamicFont(this.dynamicCharacters.getCharacters());
-        textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font);
+        Table table = new Table();
+        table.add(txtfTerm).width(400).pad(10).row();
+        table.add(txtfTranslation).width(400).pad(10).row();
+        table.add(txtfExtraData).width(400).pad(10).row();
 
-        txtfTerm = new TextField("", textFieldStyle);
-        txtfTerm.setMessageText("請輸入英文單字...");
-        txtfTerm.setPosition(50, 300);
-        txtfTerm.setSize(700, 50);
-        txtfTerm.setTextFieldListener(new TextField.TextFieldListener() {
-            @Override
-            public void keyTyped(TextField textField, char c) {
-                AddWordScreen.this.dynamicCharacters.add(c);
-                BitmapFont font1 = StyleUtil.generateDefaultDynamicFont(dynamicCharacters.getCharacters());
-                TextField.TextFieldStyle textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font1);
-                textField.setStyle(textFieldStyle);
+        Table buttonTable = new Table();
 
-            }
-        });
+        buttonTable.add(btnAdd).width(150).padRight(10);
+        buttonTable.add(btnReturn).width(150).padLeft(10);
 
-        dynamicCharacters.add("請輸入中文翻譯...");
-        font = StyleUtil.generateDefaultDynamicFont(this.dynamicCharacters.getCharacters());
-        textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font);
+        table.add(buttonTable).center().row();
+        table.setBounds(50, 10, 600, 300);
 
-        txtfTranslation = new TextField("", textFieldStyle);
-        txtfTranslation.setMessageText("請輸入中文翻譯...");
-        txtfTranslation.setPosition(50, 200);
-        txtfTranslation.setSize(700, 50);
-        txtfTranslation.setTextFieldListener(new TextField.TextFieldListener() {
-            @Override
-            public void keyTyped(TextField textField, char c) {
-                AddWordScreen.this.dynamicCharacters.add(c);
-                BitmapFont font1 = StyleUtil.generateDefaultDynamicFont(dynamicCharacters.getCharacters());
-                TextField.TextFieldStyle textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font1);
-                textField.setStyle(textFieldStyle);
-
-            }
-        });
-
-
-        stage.addActor(btnAdd);
-        stage.addActor(txtfTerm);
-        stage.addActor(txtfTranslation);
-        stage.addActor(btnReturn);
+        stage.addActor(table);
 
 
     }
