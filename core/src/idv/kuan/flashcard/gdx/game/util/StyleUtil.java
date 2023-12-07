@@ -11,6 +11,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import idv.kuan.flashcard.gdx.game.screen.MainScreen;
 
 public class StyleUtil {
+    FreeTypeFontGenerator generator;
+
 
     interface Style {
 

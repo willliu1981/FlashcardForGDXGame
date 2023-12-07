@@ -195,7 +195,6 @@ public class EditWordScreen implements Screen {
                             }
                         }
 
-
                     }
                 };
 
@@ -205,16 +204,23 @@ public class EditWordScreen implements Screen {
                 labelStyle.font = font;
                 dialog.text("您確定要刪除這筆資料?", labelStyle);
 
+                //button Yes
                 TextButton.TextButtonStyle textButtonStyle = new TextButton.TextButtonStyle();
                 textButtonStyle.font = font;
                 textButtonStyle.fontColor = Color.RED;
-                dialog.button("Yes", true, textButtonStyle); // sends "true" as the result
+                TextButton btnYes = new TextButton("Yes", textButtonStyle);
+
+                //button No
                 textButtonStyle = new TextButton.TextButtonStyle();
                 textButtonStyle.font = font;
-                textButtonStyle.fontColor = Color.WHITE;
-                dialog.button("No", false, textButtonStyle); // sends "false" as the result
+                TextButton btnNo = new TextButton("No", textButtonStyle);
 
-                dialog.pad(10);
+
+                //dialog.pad(10);
+                dialog.getContentTable().padTop(10);
+                dialog.button(btnYes, true);
+                dialog.getButtonTable().getCell(btnYes).padRight(10);
+                dialog.button(btnNo, false);
                 dialog.show(stage);
             }
         });
