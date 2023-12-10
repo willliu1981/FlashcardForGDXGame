@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -113,7 +114,7 @@ public class TestScreen implements Screen {
                     public void clicked(InputEvent event, float x, float y) {
                         // 首先將卡片縮小到0寬度，模擬卡片翻到邊緣的效果
                         image.addAction(Actions.sequence(
-                                Actions.scaleTo(0, 1,card.isFlipedToFront()? 0.2f:0.33f), // 縮放動畫，持續0.5秒
+                                Actions.scaleTo(0, 1, card.isFlipedToFront() ? 0.2f : 0.33f, Interpolation.fade), // 縮放動畫，持續0.5秒
                                 Actions.run(new Runnable() {
                                     @Override
                                     public void run() {
@@ -130,7 +131,7 @@ public class TestScreen implements Screen {
 
                                     }
                                 })
-                                , Actions.scaleTo(-1, 1, card.isFlipedToFront()? 0.2f:0.33f)
+                                , Actions.scaleTo(-1, 1, card.isFlipedToFront() ? 0.2f : 0.33f, Interpolation.bounceOut)
                         ));
 
 
