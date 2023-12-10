@@ -16,7 +16,10 @@ import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import idv.kuan.flashcard.gdx.game.test.TestScreen;
 import idv.kuan.libs.databases.schema.modifier.DatabaseSchemaUtils;
 import idv.kuan.libs.databases.schema.modifier.SchemaModifier;
 import idv.kuan.libs.databases.schema.modifier.SchemaModifierHandler;
@@ -82,7 +85,20 @@ public class MainScreen implements Screen {
         });
 
 
-        //Label title = new Label("Word FlashCard");
+        //xxx 測試用
+        TextButton btnTestTool = new TextButton("Tool test", skin);
+        btnTestTool.setPosition(20, 20);
+        btnTestTool.setSize(100, 30);
+        btnTestTool.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+
+                //testTool();
+                game.setScreen(new TestScreen());
+
+            }
+        });
+
 
         txtfTitle = new TextField("Word FlashCard", skin);
         txtfTitle.setPosition(50, 300);
@@ -98,7 +114,43 @@ public class MainScreen implements Screen {
         stage.addActor(txtfTitle);
         stage.addActor(txtfCount);
         stage.addActor(btnList);
+        stage.addActor(btnTestTool);//xxx 測試用
     }
+
+    //------------test tool begin--------------// xxx 測試用
+    private void testTool() {
+        String textWithLineNumbers =
+                "1. public class StarPattern {\n" +
+                        "2.     public static void main(String[] args) {\n" +
+                        "3.         int rows = 5; // 定義行數\n" +
+                        "4. \n" +
+                        "5.         for (int i = 0; i < rows; i++) { // 外層循環控制行\n" +
+                        "6.             for (int j = 0; j <= i; j++) { // 內層循環控制每行的星星數\n" +
+                        "7.                 System.out.print(\"* \"); // 打印星星和一個空格\n" +
+                        "8.             }\n" +
+                        "9.             System.out.println(); // 每完成一行后換行\n" +
+                        "10.         }\n" +
+                        "11.     }\n" +
+                        "12. }\n";
+
+        String textWithoutLineNumbers = removeLineNumbers(textWithLineNumbers);
+
+        System.out.println("Original text with line numbers:\n" + textWithLineNumbers);
+        System.out.println("Text after removing line numbers:\n" + textWithoutLineNumbers);
+    }
+
+    public static String removeLineNumbers(String text) {
+        // 正則表達式：僅匹配行首的數字和後綴的點，並保留後面的空白字符
+        String regex = "^(\\s*)\\d+\\.\\s*";
+        // 使用MULTILINE模式，使 '^' 匹配每一行的開頭
+        Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
+        Matcher matcher = pattern.matcher(text);
+
+        // 替換所有匹配的內容為保留的空白字符
+        return matcher.replaceAll("$1");
+    }
+    //------------test tool end--------------//
+
 
     @Override
     public void show() {
@@ -131,7 +183,21 @@ public class MainScreen implements Screen {
                 word.setNewColumns("id,term,translation,version,metadata");
                 word.setOldColumns("id,term,translation,-1,metadata");
 
+
+                TableSchemaModifier wordReviewDetails = modifierBuilder.setConstructionSql("CREATE TABLE \"word_review_details\" (\n" +
+                        "\t\"id\"\tINTEGER NOT NULL UNIQUE,\n" +
+                        "\t\"initial_review_time\"\tTEXT,\n" +
+                        "\t\"next_review_time\"\tTEXT,\n" +
+                        "\t\"last_review_time \"\tTEXT,\n" +
+                        "\t\"review_stage\"\tINTEGER NOT NULL DEFAULT -1,\n" +
+                        "\t\"review_count\"\tINTEGER NOT NULL DEFAULT 0,\n" +
+                        "\t\"metadata\"\tBLOB NOT NULL,\n" +
+                        "\tPRIMARY KEY(\"id\" AUTOINCREMENT)\n" +
+                        ")").setTableName("word_review_details").createSchemaModifier(TableSchemaModifier.class);
+
+
                 modifiers.add(word);
+                modifiers.add(wordReviewDetails);
             }
         });
     }

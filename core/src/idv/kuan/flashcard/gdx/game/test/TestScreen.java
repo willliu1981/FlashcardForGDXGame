@@ -5,31 +5,19 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-import java.sql.SQLException;
-import java.util.Date;
-import java.util.List;
-
-import idv.kuan.flashcard.gdx.game.database.dao.WordDao;
-import idv.kuan.testlib.test.TestMetadata;
-import idv.kuan.flashcard.gdx.game.database.entity.Word;
-
-import idv.kuan.libs.databases.daos.Dao;
-import idv.kuan.libs.databases.models.MetadataEntityUtil;
-import idv.kuan.libs.databases.schema.modifier.DatabaseSchemaUtils;
-import idv.kuan.libs.databases.schema.modifier.SchemaModifier;
 import idv.kuan.libs.utils.VersionHelper;
-import idv.kuan.libs.databases.schema.modifier.SchemaModifierHandler;
-import idv.kuan.libs.databases.schema.modifier.TableSchemaModifier;
-import idv.kuan.testlib.test.Test4;
 
 public class TestScreen implements Screen {
     private Stage stage;
@@ -42,125 +30,119 @@ public class TestScreen implements Screen {
     TextField textField;
     TextField testTextField;
 
-    public TestScreen(VersionHelper versionHelper) {
+    public TestScreen() {
         batch = new SpriteBatch();
         img = new Texture("badlogic.jpg");
-
-        this.versionHelper = versionHelper;
-
-        checkSchema();
 
         viewport = new StretchViewport(800, 400);
         stage = new Stage(viewport);
         Gdx.input.setInputProcessor(stage);
 
 
-        Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
-
-        //button
-        TextButton button = new TextButton("click me", skin);
-        button.setPosition(150, 100);
-        button.setSize(200, 50);
-        button.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-
-                WordDao dao = new WordDao();
-                Word word = new Word();
-
-                Date date = new Date();
-                word.setTerm("term1-" + date);
-                word.setTranslation("trans1-" + date);
-                word.setVersion(1);
-
-                MetadataEntityUtil.DefaultMetadata metadata = word.getMetadata();
-                //metadata.setData("1234-" + date);
-                MetadataEntityUtil.DefaultMetadata metadata1 = new TestMetadata();
-                metadata1.addDataObject("msg", new MetadataEntityUtil.DataObject("v1"));
-
-
-                try {
-                    dao.create(word);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-                textField.setText(word.toString());
-            }
-        });
-
-
-        textField = new TextField("edit...", skin);
-        textField.setPosition(50, 300);
-        textField.setSize(700, 50);
-
-        testTextField = new TextField("msg", skin);
-        testTextField.setPosition(50, 200);
-        testTextField.setSize(700, 50);
-        TextButton testButton = new TextButton("test", skin);
-        testButton.setPosition(400, 100);
-        testButton.setSize(200, 50);
-        testButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-
-
-                Test4 test = new Test4();
-                String s = test.test();
-
-                testTextField.setText(s);
-            }
-        });
-
-
-        stage.addActor(button);
-        stage.addActor(textField);
-        stage.addActor(testTextField);
-        stage.addActor(testButton);
-
-        testShow();
-    }
-
-    private void testShow() {
-        Dao dao = new WordDao();
-        try {
-            List<Word> all = dao.findAll();
-            System.out.println("xxx TS list:");
-            all.forEach(x -> System.out.print(x));
-
-            System.out.println();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    private void checkSchema() {
-        DatabaseSchemaUtils.checkAndUpdateSchema(versionHelper, new DatabaseSchemaUtils.UpdateSchemaExecutor() {
-            @Override
-            public void execute(SchemaModifierHandler.SchemaModifierBuilder modifierBuilder, List<SchemaModifier> modifiers) {
-                TableSchemaModifier word = modifierBuilder.setConstructionSql("CREATE TABLE \"word\" ( " +
-                        " \"id\" INTEGER NOT NULL UNIQUE, " +
-                        " \"term\" TEXT NOT NULL, " +
-                        " \"translation\" TEXT NOT NULL, " +
-                        " \"at_created\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
-                        " \"at_updated\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
-                        " \"version\" INTEGER NOT NULL, " +
-                        " \"metadata\" BLOB, " +
-                        " PRIMARY KEY(\"id\" AUTOINCREMENT) " +
-                        ")").setTableName("word").createSchemaModifier(TableSchemaModifier.class);
-                word.setNewColumns("id,term,translation,at_created,at_updated,version,metadata");
-                word.setOldColumns("id,term,translation,at_created,at_updated,-1,metadata");
-
-                modifiers.add(word);
-            }
-        });
     }
 
 
     @Override
     public void show() {
 
+        Table table = new Table();
+        table.setFillParent(true); // 讓table的大小填滿父容器
+
+// 假設你已經有一個Texture陣列，包含你要顯示的圖片
+        Texture[] cardTextures = new Texture[]{new Texture("test/13.png"),
+                new Texture("test/14.png"), new Texture("test/15.png"),
+                new Texture("test/16.png"), new Texture("test/17.png"),
+                new Texture("test/18.png"), new Texture("test/19.png"),
+                new Texture("test/22.png"), new Texture("test/24.png")
+        };
+
+        Texture cardBackTexture = new Texture("test/1.png");
+
+        final int cardWidth = 100, cardHeight = 100, padding = 10;
+
+
+        class Card {
+            boolean isFlipedToFront = false;//背面
+            TextureRegion frontTextureRegion;
+            TextureRegion backTextureRegion;
+
+            public Card(TextureRegion frontTextureRegion, TextureRegion backTextureRegion) {
+                this.frontTextureRegion = frontTextureRegion;
+                this.backTextureRegion = backTextureRegion;
+            }
+
+            public TextureRegion getCurrentTextureRegion() {
+                return isFlipedToFront ? frontTextureRegion : backTextureRegion;
+            }
+
+            public void flipToFront(boolean flipToFront) {
+                isFlipedToFront = flipToFront;
+            }
+
+            public boolean isFlipedToFront() {
+                return isFlipedToFront;
+            }
+        }
+
+// 設置表格為3行3列
+        int size = 3;
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                // 創建一個圖像元件，並將其添加到表格中
+
+
+                Card card = new Card(new TextureRegion(cardTextures[i * size + j]), new TextureRegion(cardBackTexture));
+                Image image = new Image(card.getCurrentTextureRegion().getTexture());
+
+                table.add(image).width(cardWidth).height(cardHeight).pad(padding);
+
+                // 设置卡片的原点为中心
+                image.setOrigin(cardWidth / 2, cardHeight / 2);
+
+
+                if (j == size - 1) {
+                    table.row(); // 在每列的最後添加一個新行
+                }
+
+
+                // 為卡片背面添加點擊監聽器，執行翻牌動畫
+                int finalI = i;
+                int finalJ = j;
+                image.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        // 首先將卡片縮小到0寬度，模擬卡片翻到邊緣的效果
+                        image.addAction(Actions.sequence(
+                                Actions.scaleTo(0, 1,card.isFlipedToFront()? 0.2f:0.33f), // 縮放動畫，持續0.5秒
+                                Actions.run(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (card.isFlipedToFront()) {
+                                            card.flipToFront(false);
+
+                                        } else {
+                                            card.flipToFront(true);
+
+                                        }
+
+                                        image.setDrawable(new TextureRegionDrawable(card.getCurrentTextureRegion()));
+
+
+                                    }
+                                })
+                                , Actions.scaleTo(-1, 1, card.isFlipedToFront()? 0.2f:0.33f)
+                        ));
+
+
+                    }
+                });
+
+
+            }
+
+// 將table添加到舞台上
+            stage.addActor(table);
+        }
     }
 
 
@@ -172,10 +154,6 @@ public class TestScreen implements Screen {
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
         stage.draw();
 
-        //ScreenUtils.clear(1, 1, 1, 1f);
-        //batch.begin();
-        //batch.draw(img, 0, 0);
-        //batch.end();
 
     }
 
