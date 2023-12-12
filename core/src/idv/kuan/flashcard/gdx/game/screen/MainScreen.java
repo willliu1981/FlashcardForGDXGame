@@ -20,6 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import idv.kuan.flashcard.gdx.game.test.TestScreen;
+import idv.kuan.flashcard.gdx.game.test.TestScreen2;
 import idv.kuan.libs.databases.schema.modifier.DatabaseSchemaUtils;
 import idv.kuan.libs.databases.schema.modifier.SchemaModifier;
 import idv.kuan.libs.databases.schema.modifier.SchemaModifierHandler;
@@ -94,7 +95,7 @@ public class MainScreen implements Screen {
             public void changed(ChangeEvent event, Actor actor) {
 
                 //testTool();
-                game.setScreen(new TestScreen());
+                game.setScreen(new TestScreen2());
 
             }
         });
