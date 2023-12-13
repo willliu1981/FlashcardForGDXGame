@@ -96,7 +96,7 @@ public class MainScreen implements Screen {
             public void changed(ChangeEvent event, Actor actor) {
 
                 //testTool();
-                game.setScreen(new TestScreen3());
+                game.setScreen(new TestScreen());
 
             }
         });

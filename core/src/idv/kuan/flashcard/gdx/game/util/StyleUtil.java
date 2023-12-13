@@ -63,6 +63,7 @@ public class StyleUtil {
         parameter.shadowColor = new Color(0, 0, 0, 0.75f); // 設置陰影顏色和透明度
         parameter.spaceX = space;
 
+
         BitmapFont font = generator.generateFont(parameter);
         generator.dispose(); // 不要忘記釋放資源
         return font;

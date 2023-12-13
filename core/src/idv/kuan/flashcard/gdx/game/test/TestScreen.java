@@ -3,12 +3,12 @@ package idv.kuan.flashcard.gdx.game.test;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.NinePatch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -18,12 +18,17 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import java.sql.SQLException;
+import java.util.List;
+
+import idv.kuan.flashcard.gdx.game.database.dao.WordDao;
+import idv.kuan.flashcard.gdx.game.database.entity.Word;
+import idv.kuan.flashcard.gdx.game.util.StyleUtil;
 import idv.kuan.libs.utils.VersionHelper;
 
 public class TestScreen implements Screen {
@@ -52,8 +57,8 @@ public class TestScreen implements Screen {
     @Override
     public void show() {
 
-        Table table = new Table();
-        table.setFillParent(true); // 讓table的大小填滿父容器
+        Table tb = new Table();
+        tb.setFillParent(true); // 讓table的大小填滿父容器
 
 // 假設你已經有一個Texture陣列，包含你要顯示的圖片
         Texture[] cardTextures = new Texture[]{new Texture("test/13.png"),
@@ -72,6 +77,7 @@ public class TestScreen implements Screen {
             boolean isFlipedToFront = false;//背面
             TextureRegion frontTextureRegion;
             TextureRegion backTextureRegion;
+            Word word;
 
             public Card(TextureRegion frontTextureRegion, TextureRegion backTextureRegion) {
                 this.frontTextureRegion = frontTextureRegion;
@@ -90,33 +96,147 @@ public class TestScreen implements Screen {
                 return isFlipedToFront;
             }
 
+            public Word getWord() {
+                return word;
+            }
 
+            public void setWord(Word word) {
+                this.word = word;
+            }
+
+            @Override
+            public String toString() {
+                return "Card{" +
+                        "isFlipedToFront=" + isFlipedToFront +
+                        ", frontTextureRegion=" + frontTextureRegion +
+                        ", backTextureRegion=" + backTextureRegion +
+                        ", word=" + word +
+                        '}';
+            }
         }
+
+        WordDao dao = new WordDao();
+        List<Word> all = null;
+        try {
+            all = dao.findAll();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        StyleUtil.DynamicCharacters dynamicCharacters = new StyleUtil.DynamicCharacters();
+
 
 // 設置表格為3行3列
         int size = 3;
-        for (int i = 0; i < size; i++) {
+        for (int i = 0, idx = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 // 創建一個圖像元件，並將其添加到表格中
+                Word word = all.get(idx);
 
 
-                Card card = new Card(new TextureRegion(cardTextures[i * size + j]), new TextureRegion(cardBackTexture));
-                Image image = new Image(card.getCurrentTextureRegion().getTexture());
+                if (idx > all.size()) {
+                    idx = 0;
+                } else {
+                    idx++;
+                }
 
-                table.add(image).width(cardWidth).height(cardHeight).pad(padding);
+                float xOffset =  6f, yOffset = 0, fixedWidth = 1.25f, fixedHeight = 2;
+
+                dynamicCharacters.add(word.getTranslation());
+                BitmapFont font = StyleUtil.generateDefaultDynamicFont(word.getTranslation(), 100);
+                TextField.TextFieldStyle textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font);
+
+                //front set
+                TextureRegion textureRegion1 = null;
+                {
+                    Table table1 = new Table();
+                    table1.setBounds(0, 0, cardWidth, cardHeight * 4 + 100);
+                    TextField textField1 = new TextField(word.getTranslation(), textFieldStyle);
+                    textField1.setAlignment(Align.center);
+
+                    Image imageFront = new Image(new TextureRegion(cardTextures[i * size + j]
+                            , (int) (cardWidth / xOffset), 0, (int) (cardWidth * fixedWidth), (int) (cardHeight * fixedHeight)));
+
+
+                    table1.add(textField1).width(cardWidth * 50).height(cardHeight).row();
+                    table1.add(imageFront).width(cardWidth * 50).height(cardHeight * 12);
+
+
+                    FrameBuffer frameBuffer1 = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
+                    SpriteBatch batch1 = new SpriteBatch();
+
+                    frameBuffer1.begin();
+                    Gdx.gl.glClearColor(0, 0, 0, 0);
+                    Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+                    batch1.begin();
+
+                    table1.draw(batch1, 1);
+
+                    batch1.end();
+                    frameBuffer1.end();
+
+                    Texture colorBufferTexture1 = frameBuffer1.getColorBufferTexture();
+                    textureRegion1 = new TextureRegion(colorBufferTexture1);
+                    textureRegion1.flip(false, true);
+
+                }
+
+                //back set
+                TextureRegion textureRegion2 = null;
+                {
+                    Table table2 = new Table();
+                    table2.setBounds(0, 0, cardWidth * 20, cardHeight * 4 + 100);
+                    TextField textField2 = new TextField(word.getTerm(), textFieldStyle);
+                    textField2.setAlignment(Align.center);
+
+
+                    Image imageBack = new Image(new TextureRegion(cardBackTexture
+                            , (int) (cardWidth / xOffset), 0, (int) (cardWidth * fixedWidth), (int) (cardHeight * fixedHeight)));
+
+
+                    table2.add(textField2).width(cardWidth * 20).height(cardHeight).row();
+                    table2.add(imageBack).width(cardWidth * 20).height(cardHeight * 12);
+
+
+                    FrameBuffer frameBuffer2 = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
+
+                    SpriteBatch batch2 = new SpriteBatch();
+
+                    frameBuffer2.begin();
+                    Gdx.gl.glClearColor(0, 0, 0, 0);
+                    Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+                    batch2.begin();
+
+                    table2.draw(batch2, 1);
+
+                    batch2.end();
+                    frameBuffer2.end();
+
+                    Texture colorBufferTexture2 = frameBuffer2.getColorBufferTexture();
+                    textureRegion2 = new TextureRegion(colorBufferTexture2);
+                    textureRegion2.flip(false, true);
+                }
+
+                Card card = new Card(textureRegion1, textureRegion2);
+
+                card.setWord(word);
+
+                Image img = new Image(card.getCurrentTextureRegion());
+
+                tb.add(img).width(cardWidth).height(cardHeight * 1.5f).pad(padding);
 
                 // 设置卡片的原点为中心
-                image.setOrigin(cardWidth / 2, cardHeight / 2);
+                img.setOrigin(cardWidth / 2, cardHeight * 2 / 2);
 
 
                 if (j == size - 1) {
-                    table.row(); // 在每列的最後添加一個新行
+                    tb.row(); // 在每列的最後添加一個新行
                 }
 
 
                 //*
                 // 為卡片背面添加點擊監聽器，執行翻牌動畫
-                image.addListener(new ClickListener() {
+                img.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
                         float DT_TOBACK = 0.22f;
@@ -129,10 +249,10 @@ public class TestScreen implements Screen {
                         float maxRotateDst = 1f;
 
                         // 记录原始位置
-                        final float originalX = image.getX();
-                        final float originalY = image.getY();
+                        final float originalX = img.getX();
+                        final float originalY = img.getY();
                         // 首先將卡片縮小到0寬度，模擬卡片翻到邊緣的效果
-                        image.addAction(
+                        img.addAction(
 
                                 Actions.parallel(
                                         //move
@@ -174,11 +294,11 @@ public class TestScreen implements Screen {
 
                                                         }
 
-                                                        image.setDrawable(new TextureRegionDrawable(card.getCurrentTextureRegion()));
+                                                        img.setDrawable(new TextureRegionDrawable(card.getCurrentTextureRegion()));
 
                                                     }
                                                 })
-                                                , Actions.scaleTo(-1, 1, card.isFlipedToFront() ? DT_TOBACK : DT_TOFRONT
+                                                , Actions.scaleTo(1, 1, card.isFlipedToFront() ? DT_TOBACK : DT_TOFRONT
                                                         , (card.isFlipedToFront ? Interpolation.bounceOut : Interpolation.circleOut))
                                         )));
 
@@ -188,56 +308,10 @@ public class TestScreen implements Screen {
 
 
             }
-            //*
-            class BorderedTable extends Table {
-                private ShapeRenderer shapeRenderer;
-
-                public BorderedTable() {
-                    shapeRenderer = new ShapeRenderer();
-                }
-
-                @Override
-                public void draw(Batch batch, float parentAlpha) {
-                    super.draw(batch, parentAlpha);
-                    batch.end();
-
-                    // 设置ShapeRenderer的投影矩阵
-                    shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
-                    shapeRenderer.setTransformMatrix(batch.getTransformMatrix());
-
-                    // 绘制边框
-                    shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-                    shapeRenderer.setColor(com.badlogic.gdx.graphics.Color.BLACK);
-                    shapeRenderer.rect(getX(), getY(), getWidth(), getHeight());
-                    shapeRenderer.end();
-
-                    // 在使用ShapeRenderer之后重新开始批处理
-                    batch.begin();
-                }
-            }//*/
-
-
-            Texture t1 = new Texture("test/1.png");
-            Image i1 = new Image(t1);
-            //BorderedTable tb1 = new BorderedTable();
-            Table tb1 = new Table();
-            tb1.setSize(200, 200);
-            tb1.add(i1).width(cardWidth).height(cardHeight).pad(padding);
-
-            NinePatch patch = new NinePatch(new Texture("test/14.png"), 0, 0, cardWidth, cardHeight);
-            NinePatchDrawable background = new NinePatchDrawable(patch);
-            tb1.setBackground(background);
-
-            //tb1.setFillParent(true);
-
-            tb1.addAction(Actions.scaleTo(20f, 20f, 3f));
-
-            tb1.setOrigin(Align.center);
 
 
 // 將table添加到舞台上
-            stage.addActor(table);
-            //stage.addActor(tb1);
+            stage.addActor(tb);
         }
     }
 
