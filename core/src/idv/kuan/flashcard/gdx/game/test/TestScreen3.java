@@ -41,11 +41,15 @@ public class TestScreen3 extends ScreenAdapter {
         dynamicCharacters = new StyleUtil.DynamicCharacters();
 
         dynamicCharacters.add("功能1,訊息1");
-        BitmapFont font = StyleUtil.generateDefaultDynamicFont(dynamicCharacters.getCharacters(), 80);
+        BitmapFont font = StyleUtil.generateDefaultDynamicFont(dynamicCharacters.getCharacters(), 80,20);
+        font.getData().setScale(2.0f,1.0f);
+
+
         Table tb = new Table();
         tb.setFillParent(true);
         TextField.TextFieldStyle style = StyleUtil.generateDefaultTextFieldStyle(font);
-        style.font.getData().setScale(2.0f,1.0f);
+
+
 
 
 
