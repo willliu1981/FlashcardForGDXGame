@@ -50,24 +50,27 @@ public class TestScreen2 extends ScreenAdapter {
         BitmapFont font = StyleUtil.generateDefaultDynamicFont(dynamicCharacters.getCharacters());
         font.getData().setScale(10f); // 設置字體大小
 
-        font.draw(spriteBatch, "功能測試", 100, 200);
+        font.draw(spriteBatch, "功能測試", 200, 400);
         // 如果有其它圖片也可以在這裡繪製
         spriteBatch.end();
         frameBuffer.end();
 
         // 獲取FrameBuffer的Texture
         Texture texture = frameBuffer.getColorBufferTexture();
+        // 创建TextureRegion并翻转Y轴
+        TextureRegion textureRegion = new TextureRegion(texture);
+        textureRegion.flip(false, true); // 不翻转X轴，翻转Y轴
 
         // 創建Image物件並將其添加到舞台上
-        Image image = new Image(texture);
+        Image image = new Image(textureRegion);
         stage.addActor(image);
 
         image.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // 点击后将FrameBuffer的Texture翻转并设置给Image
-                TextureRegion textureRegion = new TextureRegion(texture);
-                textureRegion.flip(false, true); // 翻轉Y軸
+                //TextureRegion textureRegion = new TextureRegion(texture);
+                //textureRegion.flip(false, true); // 翻轉Y軸
                 image.setDrawable(new TextureRegionDrawable(textureRegion));
                 image.addAction(Actions.sequence(
                         Actions.scaleTo(0, 1, 0.5f),
