@@ -140,26 +140,28 @@ public class TestScreen implements Screen {
                     idx++;
                 }
 
-                float xOffset =  6f, yOffset = 0, fixedWidth = 1.25f, fixedHeight = 2;
 
                 dynamicCharacters.add(word.getTranslation());
-                BitmapFont font = StyleUtil.generateDefaultDynamicFont(word.getTranslation(), 100);
+                BitmapFont font = StyleUtil.generateDefaultDynamicFont(word.getTranslation(), 200);
                 TextField.TextFieldStyle textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font);
+
 
                 //front set
                 TextureRegion textureRegion1 = null;
                 {
                     Table table1 = new Table();
-                    table1.setBounds(0, 0, cardWidth, cardHeight * 4 + 100);
+                    table1.setSize(cardWidth * 20, cardHeight * 10);
                     TextField textField1 = new TextField(word.getTranslation(), textFieldStyle);
                     textField1.setAlignment(Align.center);
+                    int picW = cardTextures[i * size + j].getWidth();
+                    int picH = cardTextures[i * size + j].getHeight();
 
-                    Image imageFront = new Image(new TextureRegion(cardTextures[i * size + j]
-                            , (int) (cardWidth / xOffset), 0, (int) (cardWidth * fixedWidth), (int) (cardHeight * fixedHeight)));
+
+                    Image imageFront = new Image(new TextureRegion(cardTextures[i * size + j], picW, picH));
 
 
-                    table1.add(textField1).width(cardWidth * 50).height(cardHeight).row();
-                    table1.add(imageFront).width(cardWidth * 50).height(cardHeight * 12);
+                    table1.add(textField1).width(cardWidth * 20).height(cardHeight * 3).row();
+                    table1.add(imageFront).width(cardWidth * 20).height(cardHeight * 7);
 
 
                     FrameBuffer frameBuffer1 = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
@@ -185,17 +187,18 @@ public class TestScreen implements Screen {
                 TextureRegion textureRegion2 = null;
                 {
                     Table table2 = new Table();
-                    table2.setBounds(0, 0, cardWidth * 20, cardHeight * 4 + 100);
+                    table2.setSize(cardWidth * 20, cardHeight * 10);
                     TextField textField2 = new TextField(word.getTerm(), textFieldStyle);
                     textField2.setAlignment(Align.center);
 
+                    int picW = cardBackTexture.getWidth();
+                    int picH = cardBackTexture.getHeight();
 
-                    Image imageBack = new Image(new TextureRegion(cardBackTexture
-                            , (int) (cardWidth / xOffset), 0, (int) (cardWidth * fixedWidth), (int) (cardHeight * fixedHeight)));
+                    Image imageBack = new Image(new TextureRegion(cardBackTexture, picW, picH));
 
 
-                    table2.add(textField2).width(cardWidth * 20).height(cardHeight).row();
-                    table2.add(imageBack).width(cardWidth * 20).height(cardHeight * 12);
+                    table2.add(textField2).width(cardWidth * 20).height(cardHeight * 3).row();
+                    table2.add(imageBack).width(cardWidth * 20).height(cardHeight * 7);
 
 
                     FrameBuffer frameBuffer2 = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
@@ -223,7 +226,7 @@ public class TestScreen implements Screen {
 
                 Image img = new Image(card.getCurrentTextureRegion());
 
-                tb.add(img).width(cardWidth).height(cardHeight * 1.5f).pad(padding);
+                tb.add(img).width(cardWidth * 1.5f).height(cardHeight * 1.5f).pad(padding);
 
                 // 设置卡片的原点为中心
                 img.setOrigin(cardWidth / 2, cardHeight * 2 / 2);
