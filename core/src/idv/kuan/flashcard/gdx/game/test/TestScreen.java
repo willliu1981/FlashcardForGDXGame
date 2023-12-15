@@ -68,9 +68,9 @@ public class TestScreen implements Screen {
                 new Texture("test/22.png"), new Texture("test/24.png")
         };
 
-        Texture cardBackTexture = new Texture("test/1.png");
+        Texture cardBackTexture = new Texture("test/s1.png");
 
-        final int cardWidth = 100, cardHeight = 100, padding = 10;
+        final int cardWidth = 96, cardHeight = 108, padding = 10;
 
 
         class Card {
@@ -226,7 +226,7 @@ public class TestScreen implements Screen {
 
                 Image img = new Image(card.getCurrentTextureRegion());
 
-                tb.add(img).width(cardWidth * 1.5f).height(cardHeight * 1.5f).pad(padding);
+                tb.add(img).width(cardWidth * 1.0f).height(cardHeight * 1.0f).pad(padding);
 
                 // 设置卡片的原点为中心
                 img.setOrigin(cardWidth / 2, cardHeight * 2 / 2);
