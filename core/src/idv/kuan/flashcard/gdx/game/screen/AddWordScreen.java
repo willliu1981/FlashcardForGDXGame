@@ -50,7 +50,7 @@ public class AddWordScreen implements Screen {
 
         //term
         dynamicCharacters.add("請輸入英文單字...");
-        font = StyleUtil.generateDefaultDynamicFont(this.dynamicCharacters.getCharacters());
+        font = StyleUtil.generateCustomFont(this.dynamicCharacters.getCharacters());
         textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font);
 
         txtfTerm = new TextField("", textFieldStyle);
@@ -59,7 +59,7 @@ public class AddWordScreen implements Screen {
             @Override
             public void keyTyped(TextField textField, char c) {
                 AddWordScreen.this.dynamicCharacters.add(c);
-                BitmapFont font1 = StyleUtil.generateDefaultDynamicFont(dynamicCharacters.getCharacters());
+                BitmapFont font1 = StyleUtil.generateCustomFont(dynamicCharacters.getCharacters());
                 TextField.TextFieldStyle textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font1);
                 textField.setStyle(textFieldStyle);
 
@@ -68,7 +68,7 @@ public class AddWordScreen implements Screen {
 
         //translation
         dynamicCharacters.add("請輸入中文翻譯...");
-        font = StyleUtil.generateDefaultDynamicFont(this.dynamicCharacters.getCharacters());
+        font = StyleUtil.generateCustomFont(this.dynamicCharacters.getCharacters());
         textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font);
 
         txtfTranslation = new TextField("", textFieldStyle);
@@ -77,7 +77,7 @@ public class AddWordScreen implements Screen {
             @Override
             public void keyTyped(TextField textField, char c) {
                 AddWordScreen.this.dynamicCharacters.add(c);
-                BitmapFont font1 = StyleUtil.generateDefaultDynamicFont(dynamicCharacters.getCharacters());
+                BitmapFont font1 = StyleUtil.generateCustomFont(dynamicCharacters.getCharacters());
                 TextField.TextFieldStyle textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font1);
                 textField.setStyle(textFieldStyle);
 
@@ -86,7 +86,7 @@ public class AddWordScreen implements Screen {
 
         //extra data
         dynamicCharacters.add("請輸入額外資料...");
-        font = StyleUtil.generateDefaultDynamicFont(this.dynamicCharacters.getCharacters());
+        font = StyleUtil.generateCustomFont(this.dynamicCharacters.getCharacters());
         textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font);
 
         txtfExtraData = new TextField("", textFieldStyle);
@@ -95,7 +95,7 @@ public class AddWordScreen implements Screen {
             @Override
             public void keyTyped(TextField textField, char c) {
                 AddWordScreen.this.dynamicCharacters.add(c);
-                BitmapFont font1 = StyleUtil.generateDefaultDynamicFont(dynamicCharacters.getCharacters());
+                BitmapFont font1 = StyleUtil.generateCustomFont(dynamicCharacters.getCharacters());
                 TextField.TextFieldStyle textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font1);
                 textField.setStyle(textFieldStyle);
 
@@ -109,7 +109,7 @@ public class AddWordScreen implements Screen {
 
         //add word
         dynamicCharacters.add("新增...");
-        font = StyleUtil.generateDefaultDynamicFont(this.dynamicCharacters.getCharacters());
+        font = StyleUtil.generateCustomFont(this.dynamicCharacters.getCharacters());
         TextButton.TextButtonStyle textButtonStyle = StyleUtil.generateDefaultButtonStyle(font);
 
         TextButton btnAdd = new TextButton("新增", textButtonStyle);

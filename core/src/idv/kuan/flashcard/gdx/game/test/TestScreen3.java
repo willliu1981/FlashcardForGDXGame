@@ -2,7 +2,6 @@ package idv.kuan.flashcard.gdx.game.test;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
@@ -15,7 +14,6 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
@@ -41,7 +39,7 @@ public class TestScreen3 extends ScreenAdapter {
         dynamicCharacters = new StyleUtil.DynamicCharacters();
 
         dynamicCharacters.add("功能1,訊息1");
-        BitmapFont font = StyleUtil.generateDefaultDynamicFont(dynamicCharacters.getCharacters(), 80,20);
+        BitmapFont font = StyleUtil.generateCustomFont(dynamicCharacters.getCharacters(), 80,20);
         font.getData().setScale(2.0f,1.0f);
 
 

@@ -75,6 +75,10 @@ public class TestScreen4 implements Screen {
 
         Texture cardBackTexture = new Texture("test/b1.png");
 
+        Texture questionTexture = new Texture("test/q1.png");
+        Texture answerTexture = new Texture("test/a1.png");
+
+
         final int cardWidth = 96, cardHeight = 108, padding = 10;
 
 
@@ -151,7 +155,7 @@ public class TestScreen4 implements Screen {
             e.printStackTrace();
         }
 
-        StyleUtil.DynamicCharacters dynamicCharacters = new StyleUtil.DynamicCharacters();
+        StyleUtil.DynamicCharacters dynamicCharacters = StyleUtil.getDefaultDynamicCharacters();
 
 
 // 設置表格為3行3列
@@ -179,19 +183,25 @@ public class TestScreen4 implements Screen {
         List<Card> cardList = new ArrayList<>();
         randomElements.forEach(x -> {
 
-            Card qc = new QuestionCard(new TextureRegion(cardTextures[8], cardTextures[8].getWidth(), cardTextures[8].getHeight())
+            Card qc = new QuestionCard(new TextureRegion(questionTexture, questionTexture.getWidth(), questionTexture.getHeight())
                     , new TextureRegion(cardBackTexture, cardBackTexture.getWidth(), cardBackTexture.getHeight()));
-            Card ac = new AnswerCard(new TextureRegion(cardTextures[7], cardTextures[7].getWidth(), cardTextures[7].getHeight())
+            Card ac = new AnswerCard(new TextureRegion(answerTexture, answerTexture.getWidth(), answerTexture.getHeight())
                     , new TextureRegion(cardBackTexture, cardBackTexture.getWidth(), cardBackTexture.getHeight()));
             qc.setWord(x);
             ac.setWord(x);
 
             cardList.add(qc);
             cardList.add(ac);
+            dynamicCharacters.add(x.getTranslation());
+            dynamicCharacters.add(x.getTerm());
 
         });
 
         Collections.shuffle(cardList);
+
+
+        BitmapFont font = StyleUtil.generateCustomFont(dynamicCharacters, 200);
+        TextField.TextFieldStyle textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font);
 
 
 // randomElements 現在包含了隨機的12個元素，如果原列表不足12個，則會包含重複的元素
@@ -211,9 +221,9 @@ public class TestScreen4 implements Screen {
                     msg = c1.getWord().getTranslation();
                 }
 
-                dynamicCharacters.add(msg);
-                BitmapFont font = StyleUtil.generateDefaultDynamicFont(msg, 200);
-                TextField.TextFieldStyle textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font);
+
+                //TextField.TextFieldStyle textFieldStyle1
+                //      = StyleUtil.generateDefaultTextFieldStyle(StyleUtil.generateCustomFont(msg, 200));
 
 
                 //front set
@@ -377,9 +387,15 @@ public class TestScreen4 implements Screen {
             }
 
 
-// 將table添加到舞台上
-            stage.addActor(tb);
         }
+
+// 將table添加到舞台上
+        stage.addActor(tb);
+        //--test
+        Gdx.app.log("chars", dynamicCharacters.getCharacters());
+        TextField testText = new TextField(dynamicCharacters.getCharacters(), textFieldStyle);
+        testText.setWidth(800);
+        stage.addActor(testText);
     }
 
 

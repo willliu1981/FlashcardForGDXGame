@@ -16,7 +16,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
@@ -101,7 +100,7 @@ public class WordListScreen implements Screen {
                 if (w != null) {
                     dynamicCharacters.add(w.getTranslation());
                 }
-                font = StyleUtil.generateDefaultDynamicFont(this.dynamicCharacters.getCharacters());
+                font = StyleUtil.generateCustomFont(this.dynamicCharacters.getCharacters());
                 labelStyle = StyleUtil.generateDefaultLabelStyle(font);
 
                 Label translationLabel = new Label(w != null ? w.getTranslation() : null, labelStyle);
@@ -111,7 +110,7 @@ public class WordListScreen implements Screen {
                 if (w != null && w.getMetadata() != null && w.getMetadata().getDataObject(TestMetadata.EXTRA_DATA) != null) {
                     dynamicCharacters.add((String) w.getMetadata().getDataObject(TestMetadata.EXTRA_DATA).getData());
                 }
-                font = StyleUtil.generateDefaultDynamicFont(this.dynamicCharacters.getCharacters(), 12);
+                font = StyleUtil.generateCustomFont(this.dynamicCharacters.getCharacters(), 12);
 
                 labelStyle = StyleUtil.generateDefaultLabelStyle(font);
 

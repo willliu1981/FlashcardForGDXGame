@@ -65,7 +65,7 @@ public class EditWordScreen implements Screen {
 
         //term
         dynamicCharacters.add("請輸入英文單字..." + word.getTerm());
-        font = StyleUtil.generateDefaultDynamicFont(this.dynamicCharacters.getCharacters());
+        font = StyleUtil.generateCustomFont(this.dynamicCharacters.getCharacters());
         textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font);
 
         txtfTerm = new TextField(word.getTerm(), textFieldStyle);
@@ -74,7 +74,7 @@ public class EditWordScreen implements Screen {
             @Override
             public void keyTyped(TextField textField, char c) {
                 EditWordScreen.this.dynamicCharacters.add(c);
-                BitmapFont font1 = StyleUtil.generateDefaultDynamicFont(dynamicCharacters.getCharacters());
+                BitmapFont font1 = StyleUtil.generateCustomFont(dynamicCharacters.getCharacters());
                 TextField.TextFieldStyle textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font1);
                 textField.setStyle(textFieldStyle);
 
@@ -83,7 +83,7 @@ public class EditWordScreen implements Screen {
 
         //translation
         dynamicCharacters.add("請輸入中文翻譯..." + word.getTranslation());
-        font = StyleUtil.generateDefaultDynamicFont(this.dynamicCharacters.getCharacters());
+        font = StyleUtil.generateCustomFont(this.dynamicCharacters.getCharacters());
         textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font);
 
         txtfTranslation = new TextField(word.getTranslation(), textFieldStyle);
@@ -92,7 +92,7 @@ public class EditWordScreen implements Screen {
             @Override
             public void keyTyped(TextField textField, char c) {
                 EditWordScreen.this.dynamicCharacters.add(c);
-                BitmapFont font1 = StyleUtil.generateDefaultDynamicFont(dynamicCharacters.getCharacters());
+                BitmapFont font1 = StyleUtil.generateCustomFont(dynamicCharacters.getCharacters());
                 TextField.TextFieldStyle textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font1);
                 textField.setStyle(textFieldStyle);
 
@@ -101,7 +101,7 @@ public class EditWordScreen implements Screen {
 
         //extra data
         dynamicCharacters.add("請輸入額外資料...");
-        font = StyleUtil.generateDefaultDynamicFont(this.dynamicCharacters.getCharacters());
+        font = StyleUtil.generateCustomFont(this.dynamicCharacters.getCharacters());
         textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font);
 
         txtfExtraData = new TextField("", textFieldStyle);
@@ -110,7 +110,7 @@ public class EditWordScreen implements Screen {
             @Override
             public void keyTyped(TextField textField, char c) {
                 EditWordScreen.this.dynamicCharacters.add(c);
-                BitmapFont font1 = StyleUtil.generateDefaultDynamicFont(dynamicCharacters.getCharacters());
+                BitmapFont font1 = StyleUtil.generateCustomFont(dynamicCharacters.getCharacters());
                 TextField.TextFieldStyle textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font1);
                 textField.setStyle(textFieldStyle);
 
@@ -124,7 +124,7 @@ public class EditWordScreen implements Screen {
 
         //add word
         dynamicCharacters.add("更新...");
-        font = StyleUtil.generateDefaultDynamicFont(this.dynamicCharacters.getCharacters());
+        font = StyleUtil.generateCustomFont(this.dynamicCharacters.getCharacters());
         TextButton.TextButtonStyle textButtonStyle = StyleUtil.generateDefaultButtonStyle(font);
 
         TextButton btnAdd = new TextButton("更新", textButtonStyle);
@@ -177,7 +177,7 @@ public class EditWordScreen implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 dynamicCharacters.add("刪除資料");
-                BitmapFont font = StyleUtil.generateDefaultDynamicFont(dynamicCharacters.getCharacters());
+                BitmapFont font = StyleUtil.generateCustomFont(dynamicCharacters.getCharacters());
                 Window.WindowStyle style = new Window.WindowStyle();
                 style.titleFont = font;
 
@@ -199,7 +199,7 @@ public class EditWordScreen implements Screen {
                 };
 
                 dynamicCharacters.add("您確定要刪除這筆資料?");
-                font = StyleUtil.generateDefaultDynamicFont(dynamicCharacters.getCharacters());
+                font = StyleUtil.generateCustomFont(dynamicCharacters.getCharacters());
                 Label.LabelStyle labelStyle = new Label.LabelStyle();
                 labelStyle.font = font;
                 dialog.text("您確定要刪除這筆資料?", labelStyle);

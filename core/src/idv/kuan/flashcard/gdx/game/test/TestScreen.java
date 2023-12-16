@@ -142,7 +142,7 @@ public class TestScreen implements Screen {
 
 
                 dynamicCharacters.add(word.getTranslation());
-                BitmapFont font = StyleUtil.generateDefaultDynamicFont(word.getTranslation(), 200);
+                BitmapFont font = StyleUtil.generateCustomFont(word.getTranslation(), 200);
                 TextField.TextFieldStyle textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font);
 
 

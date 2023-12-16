@@ -17,7 +17,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-import idv.kuan.flashcard.gdx.game.screen.MainScreen;
 import idv.kuan.flashcard.gdx.game.util.StyleUtil;
 
 public class TestScreen2 extends ScreenAdapter {
@@ -47,7 +46,7 @@ public class TestScreen2 extends ScreenAdapter {
         // 繪製文字
 
         dynamicCharacters.add("功能測試");
-        BitmapFont font = StyleUtil.generateDefaultDynamicFont(dynamicCharacters.getCharacters());
+        BitmapFont font = StyleUtil.generateCustomFont(dynamicCharacters.getCharacters());
         font.getData().setScale(10f); // 設置字體大小
 
         font.draw(spriteBatch, "功能測試", 200, 400);

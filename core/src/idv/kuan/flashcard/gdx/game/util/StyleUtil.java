@@ -44,20 +44,47 @@ public class StyleUtil {
         }
     }
 
-
-    public static BitmapFont generateDefaultDynamicFont(String userInput) {
-        return generateDefaultDynamicFont(userInput, 16, 0);
+    public static class DefaultDynamicCharacters extends DynamicCharacters {
+        private DefaultDynamicCharacters() {
+            this.add(FreeTypeFontGenerator.DEFAULT_CHARS);
+        }
     }
 
-    public static BitmapFont generateDefaultDynamicFont(String userInput, int fontSize) {
-        return generateDefaultDynamicFont(userInput, fontSize, 0);
+    public static DynamicCharacters getDefaultDynamicCharacters() {
+        return new DefaultDynamicCharacters();
     }
 
-    public static BitmapFont generateDefaultDynamicFont(String userInput, int fontSize, int space) {
+
+    public static BitmapFont generateCustomFont(String userInput) {
+        return generateCustomFont(userInput, 16, 0);
+    }
+
+    public static BitmapFont generateCustomFont(DynamicCharacters dynamicCharacters) {
+        return generateCustomFont(dynamicCharacters, 16, 0);
+    }
+
+    public static BitmapFont generateCustomFont(String userInput, int fontSize) {
+        return generateCustomFont(userInput, fontSize, 0);
+    }
+
+    public static BitmapFont generateCustomFont(DynamicCharacters dynamicCharacters, int fontSize) {
+        return generateCustomFont(dynamicCharacters, fontSize, 0);
+    }
+
+    public static BitmapFont generateCustomFont(String userInput, int fontSize, int space) {
+        DynamicCharacters dynamicCharacters = new DefaultDynamicCharacters();
+        dynamicCharacters.add(userInput);
+        return generateCustomFont(dynamicCharacters, fontSize, space);
+    }
+
+    public static BitmapFont generateCustomFont(DynamicCharacters dynamicCharacters, int fontSize, int space) {
+
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("GenJyuuGothic-Monospace-Normal.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
         parameter.size = fontSize; // 字體大小
-        parameter.characters = FreeTypeFontGenerator.DEFAULT_CHARS + userInput;
+        parameter.characters = (DefaultDynamicCharacters.class.isInstance(dynamicCharacters)
+                ? "" : FreeTypeFontGenerator.DEFAULT_CHARS)
+                + dynamicCharacters.getCharacters();
         parameter.shadowOffsetX = -1; // 設置陰影的X軸偏移
         parameter.shadowOffsetY = 1; // 設置陰影的Y軸偏移
         parameter.shadowColor = new Color(0, 0, 0, 0.75f); // 設置陰影顏色和透明度
@@ -67,6 +94,8 @@ public class StyleUtil {
         BitmapFont font = generator.generateFont(parameter);
         generator.dispose(); // 不要忘記釋放資源
         return font;
+
+
     }
 
 
