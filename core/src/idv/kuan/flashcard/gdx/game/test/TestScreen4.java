@@ -155,8 +155,6 @@ public class TestScreen4 implements Screen {
             e.printStackTrace();
         }
 
-        StyleUtil.DynamicCharacters dynamicCharacters = StyleUtil.getDefaultDynamicCharacters();
-
 
 // 設置表格為3行3列
         int cols = 6;
@@ -180,6 +178,7 @@ public class TestScreen4 implements Screen {
 // 如果打亂順序是必要的，可以在收集到新的列表後再次打亂
         Collections.shuffle(randomElements);
 
+
         List<Card> cardList = new ArrayList<>();
         randomElements.forEach(x -> {
 
@@ -192,27 +191,34 @@ public class TestScreen4 implements Screen {
 
             cardList.add(qc);
             cardList.add(ac);
-            dynamicCharacters.add(x.getTranslation());
-            dynamicCharacters.add(x.getTerm());
+
 
         });
 
         Collections.shuffle(cardList);
 
+        // 在每行開始前創建一個新的DynamicCharacters實例，並收集該行的所有單詞。
+        // 這樣做是為了避免一次加載過多的字體圖紋，這可能導致字體顯示不完整。
+        // 通過限制每行所加載的字體數量，我們可以確保字體的圖紋可以完整地渲染在屏幕上。
+        for (int i = 0, idx1 = 0, indx2 = 0; i < rows; i++) {
 
-        BitmapFont font = StyleUtil.generateCustomFont(dynamicCharacters, 200);
-        TextField.TextFieldStyle textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font);
+            StyleUtil.DynamicCharacters dynamicCharacters = new StyleUtil.DynamicCharacters();
+            for (int j = 0; j < cols; j++) {
+                Card c1 = cardList.get(indx2);
+                dynamicCharacters.add(c1.getWord().getTranslation());
+                dynamicCharacters.add(c1.getWord().getTerm());
+                indx2++;
+            }
 
+            // 使用收集到的單詞生成字體，並為TextField創建一個新的樣式。
+            // 字體大小設置為200，這是根據渲染需求和性能考量決定的一個值。
+            BitmapFont font = StyleUtil.generateFontWithAddedChars(dynamicCharacters, 200);
+            TextField.TextFieldStyle textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font);
 
-// randomElements 現在包含了隨機的12個元素，如果原列表不足12個，則會包含重複的元素
-
-        for (int i = 0, idx = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 // 創建一個圖像元件，並將其添加到表格中
-                // Word word = randomElements.get(idx);
-
-                Card c1 = cardList.get(idx);
-                idx++;
+                Card c1 = cardList.get(idx1);
+                idx1++;
 
                 String msg = null;
                 if (QuestionCard.class.isInstance(c1)) {
@@ -220,10 +226,6 @@ public class TestScreen4 implements Screen {
                 } else if (AnswerCard.class.isInstance(c1)) {
                     msg = c1.getWord().getTranslation();
                 }
-
-
-                //TextField.TextFieldStyle textFieldStyle1
-                //      = StyleUtil.generateDefaultTextFieldStyle(StyleUtil.generateCustomFont(msg, 200));
 
 
                 //front set
@@ -391,11 +393,7 @@ public class TestScreen4 implements Screen {
 
 // 將table添加到舞台上
         stage.addActor(tb);
-        //--test
-        Gdx.app.log("chars", dynamicCharacters.getCharacters());
-        TextField testText = new TextField(dynamicCharacters.getCharacters(), textFieldStyle);
-        testText.setWidth(800);
-        stage.addActor(testText);
+
     }
 
 

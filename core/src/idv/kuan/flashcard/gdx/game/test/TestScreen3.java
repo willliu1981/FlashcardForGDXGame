@@ -39,7 +39,7 @@ public class TestScreen3 extends ScreenAdapter {
         dynamicCharacters = new StyleUtil.DynamicCharacters();
 
         dynamicCharacters.add("功能1,訊息1");
-        BitmapFont font = StyleUtil.generateCustomFont(dynamicCharacters.getCharacters(), 80,20);
+        BitmapFont font = StyleUtil.generateFontWithAddedChars(dynamicCharacters.getCharacters(), 80,20);
         font.getData().setScale(2.0f,1.0f);
 
 

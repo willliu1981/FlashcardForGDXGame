@@ -100,7 +100,7 @@ public class WordListScreen implements Screen {
                 if (w != null) {
                     dynamicCharacters.add(w.getTranslation());
                 }
-                font = StyleUtil.generateCustomFont(this.dynamicCharacters.getCharacters());
+                font = StyleUtil.generateFontWithAddedChars(this.dynamicCharacters.getCharacters());
                 labelStyle = StyleUtil.generateDefaultLabelStyle(font);
 
                 Label translationLabel = new Label(w != null ? w.getTranslation() : null, labelStyle);
@@ -110,7 +110,7 @@ public class WordListScreen implements Screen {
                 if (w != null && w.getMetadata() != null && w.getMetadata().getDataObject(TestMetadata.EXTRA_DATA) != null) {
                     dynamicCharacters.add((String) w.getMetadata().getDataObject(TestMetadata.EXTRA_DATA).getData());
                 }
-                font = StyleUtil.generateCustomFont(this.dynamicCharacters.getCharacters(), 12);
+                font = StyleUtil.generateFontWithAddedChars(this.dynamicCharacters.getCharacters(), 12);
 
                 labelStyle = StyleUtil.generateDefaultLabelStyle(font);
 

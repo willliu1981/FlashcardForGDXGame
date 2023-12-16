@@ -46,7 +46,7 @@ public class TestScreen2 extends ScreenAdapter {
         // 繪製文字
 
         dynamicCharacters.add("功能測試");
-        BitmapFont font = StyleUtil.generateCustomFont(dynamicCharacters.getCharacters());
+        BitmapFont font = StyleUtil.generateFontWithAddedChars(dynamicCharacters.getCharacters());
         font.getData().setScale(10f); // 設置字體大小
 
         font.draw(spriteBatch, "功能測試", 200, 400);

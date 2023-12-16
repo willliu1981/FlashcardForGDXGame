@@ -28,12 +28,16 @@ public class StyleUtil {
         }
 
         public DynamicCharacters add(String string) {
+            //*
             for (char c : string.toCharArray()) {
                 if (characters.indexOf(String.valueOf(c)) < 0) {
                     characters.append(c);
-
                 }
             }
+
+            //*/
+
+            //characters.append(string);
 
             return this;
         }
@@ -55,29 +59,29 @@ public class StyleUtil {
     }
 
 
-    public static BitmapFont generateCustomFont(String userInput) {
-        return generateCustomFont(userInput, 16, 0);
+    public static BitmapFont generateFontWithAddedChars(String userInput) {
+        return generateFontWithAddedChars(userInput, 16, 0);
     }
 
-    public static BitmapFont generateCustomFont(DynamicCharacters dynamicCharacters) {
-        return generateCustomFont(dynamicCharacters, 16, 0);
+    public static BitmapFont generateFontWithAddedChars(DynamicCharacters dynamicCharacters) {
+        return generateFontWithAddedChars(dynamicCharacters, 16, 0);
     }
 
-    public static BitmapFont generateCustomFont(String userInput, int fontSize) {
-        return generateCustomFont(userInput, fontSize, 0);
+    public static BitmapFont generateFontWithAddedChars(String userInput, int fontSize) {
+        return generateFontWithAddedChars(userInput, fontSize, 0);
     }
 
-    public static BitmapFont generateCustomFont(DynamicCharacters dynamicCharacters, int fontSize) {
-        return generateCustomFont(dynamicCharacters, fontSize, 0);
+    public static BitmapFont generateFontWithAddedChars(DynamicCharacters dynamicCharacters, int fontSize) {
+        return generateFontWithAddedChars(dynamicCharacters, fontSize, 0);
     }
 
-    public static BitmapFont generateCustomFont(String userInput, int fontSize, int space) {
+    public static BitmapFont generateFontWithAddedChars(String userInput, int fontSize, int space) {
         DynamicCharacters dynamicCharacters = new DefaultDynamicCharacters();
         dynamicCharacters.add(userInput);
-        return generateCustomFont(dynamicCharacters, fontSize, space);
+        return generateFontWithAddedChars(dynamicCharacters, fontSize, space);
     }
 
-    public static BitmapFont generateCustomFont(DynamicCharacters dynamicCharacters, int fontSize, int space) {
+    public static BitmapFont generateFontWithAddedChars(DynamicCharacters dynamicCharacters, int fontSize, int space) {
 
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("GenJyuuGothic-Monospace-Normal.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
@@ -89,7 +93,6 @@ public class StyleUtil {
         parameter.shadowOffsetY = 1; // 設置陰影的Y軸偏移
         parameter.shadowColor = new Color(0, 0, 0, 0.75f); // 設置陰影顏色和透明度
         parameter.spaceX = space;
-
 
         BitmapFont font = generator.generateFont(parameter);
         generator.dispose(); // 不要忘記釋放資源
