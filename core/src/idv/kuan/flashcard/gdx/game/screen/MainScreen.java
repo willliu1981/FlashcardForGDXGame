@@ -23,6 +23,7 @@ import idv.kuan.flashcard.gdx.game.test.TestScreen;
 import idv.kuan.flashcard.gdx.game.test.TestScreen2;
 import idv.kuan.flashcard.gdx.game.test.TestScreen3;
 import idv.kuan.flashcard.gdx.game.test.TestScreen4;
+import idv.kuan.flashcard.gdx.game.test.TestScreen5;
 import idv.kuan.libs.databases.schema.modifier.DatabaseSchemaUtils;
 import idv.kuan.libs.databases.schema.modifier.SchemaModifier;
 import idv.kuan.libs.databases.schema.modifier.SchemaModifierHandler;
@@ -88,7 +89,7 @@ public class MainScreen implements Screen {
         });
 
 
-        //xxx 測試用
+        //--test
         TextButton btnTestTool = new TextButton("Tool test", skin);
         btnTestTool.setPosition(20, 20);
         btnTestTool.setSize(100, 30);
@@ -97,7 +98,7 @@ public class MainScreen implements Screen {
             public void changed(ChangeEvent event, Actor actor) {
 
                 //testTool();
-                game.setScreen(new TestScreen4());
+                game.setScreen(new TestScreen5());
 
             }
         });

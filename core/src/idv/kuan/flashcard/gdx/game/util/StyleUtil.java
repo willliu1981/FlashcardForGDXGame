@@ -28,16 +28,14 @@ public class StyleUtil {
         }
 
         public DynamicCharacters add(String string) {
-            //*
+
             for (char c : string.toCharArray()) {
                 if (characters.indexOf(String.valueOf(c)) < 0) {
                     characters.append(c);
                 }
             }
 
-            //*/
 
-            //characters.append(string);
 
             return this;
         }
@@ -67,25 +65,25 @@ public class StyleUtil {
         return generateFontWithAddedChars(dynamicCharacters, 16, 0);
     }
 
-    public static BitmapFont generateFontWithAddedChars(String userInput, int fontSize) {
-        return generateFontWithAddedChars(userInput, fontSize, 0);
+    public static BitmapFont generateFontWithAddedChars(String userInput, int parameterSize) {
+        return generateFontWithAddedChars(userInput, parameterSize, 0);
     }
 
-    public static BitmapFont generateFontWithAddedChars(DynamicCharacters dynamicCharacters, int fontSize) {
-        return generateFontWithAddedChars(dynamicCharacters, fontSize, 0);
+    public static BitmapFont generateFontWithAddedChars(DynamicCharacters dynamicCharacters, int parameterSize) {
+        return generateFontWithAddedChars(dynamicCharacters, parameterSize, 0);
     }
 
-    public static BitmapFont generateFontWithAddedChars(String userInput, int fontSize, int space) {
+    public static BitmapFont generateFontWithAddedChars(String userInput, int parameterSize, int space) {
         DynamicCharacters dynamicCharacters = new DefaultDynamicCharacters();
         dynamicCharacters.add(userInput);
-        return generateFontWithAddedChars(dynamicCharacters, fontSize, space);
+        return generateFontWithAddedChars(dynamicCharacters, parameterSize, space);
     }
 
-    public static BitmapFont generateFontWithAddedChars(DynamicCharacters dynamicCharacters, int fontSize, int space) {
+    public static BitmapFont generateFontWithAddedChars(DynamicCharacters dynamicCharacters, int parameterSize, int space) {
 
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("GenJyuuGothic-Monospace-Normal.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = fontSize; // 字體大小
+        parameter.size = parameterSize; // 字體大小
         parameter.characters = (DefaultDynamicCharacters.class.isInstance(dynamicCharacters)
                 ? "" : FreeTypeFontGenerator.DEFAULT_CHARS)
                 + dynamicCharacters.getCharacters();
