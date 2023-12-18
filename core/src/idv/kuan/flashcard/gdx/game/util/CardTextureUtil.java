@@ -12,8 +12,8 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 public class CardTextureUtil {
 
 
-    public static CardCreator getCardCreator() {
-        return new CardCreator();
+    public static CardTextureCreator getCardTextureCreator() {
+        return new CardTextureCreator();
     }
 
     public static class TextureModle {
@@ -75,11 +75,11 @@ public class CardTextureUtil {
 
     }
 
-    public static class CardCreator {
+    public static class CardTextureCreator {
         FrameBuffer frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
         SpriteBatch batch = new SpriteBatch();
 
-        private CardCreator() {
+        private CardTextureCreator() {
 
         }
 

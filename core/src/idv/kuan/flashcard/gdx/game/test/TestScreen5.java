@@ -325,8 +325,8 @@ public class TestScreen5 implements Screen {
     }
 
     private TextureRegion createFrontCardWithQuestionTexture(Card card, float scaleFactor, String msg, TextField.TextFieldStyle textFieldStyle) {
-        CardTextureUtil.CardCreator cardCreator = CardTextureUtil.getCardCreator();
-        TextureRegion textureRegion = cardCreator.createTextureRegion(new CardTextureUtil.CardCreator.TextureCreator() {
+        CardTextureUtil.CardTextureCreator cardTextureCreator = CardTextureUtil.getCardTextureCreator();
+        TextureRegion textureRegion = cardTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.TextureCreator() {
             @Override
             public void createTexture(CardTextureUtil.TextureModle modle) {
                 Table table1 = new Table();
@@ -354,8 +354,8 @@ public class TestScreen5 implements Screen {
 
 
     private TextureRegion createBackCardTexture(Card card) {
-        CardTextureUtil.CardCreator cardCreator = CardTextureUtil.getCardCreator();
-        TextureRegion textureRegion = cardCreator.createTextureRegion(new CardTextureUtil.CardCreator.TextureCreator() {
+        CardTextureUtil.CardTextureCreator cardTextureCreator = CardTextureUtil.getCardTextureCreator();
+        TextureRegion textureRegion = cardTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.TextureCreator() {
             @Override
             public void createTexture(CardTextureUtil.TextureModle modle) {
                 Table table = new Table();
