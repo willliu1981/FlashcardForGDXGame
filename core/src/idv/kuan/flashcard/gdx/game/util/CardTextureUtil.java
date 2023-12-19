@@ -8,15 +8,16 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.utils.ScreenUtils;
 
 public class CardTextureUtil {
 
 
-    public static CardTextureCreator getCardTextureCreator() {
-        return new CardTextureCreator();
+    public static CardTextureCreator getCardTextureCreator(SpriteBatch batch) {
+        return new CardTextureCreator(batch);
     }
 
-    public static class TextureModle {
+    public static class TextureCreatorModel {
         Actor drawTarget;
 
         //glClearColor
@@ -76,34 +77,41 @@ public class CardTextureUtil {
     }
 
     public static class CardTextureCreator {
-        FrameBuffer frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
-        SpriteBatch batch = new SpriteBatch();
+        SpriteBatch batch;
+        FrameBuffer frameBuffer;
 
-        private CardTextureCreator() {
-
+        private CardTextureCreator(SpriteBatch batch) {
+            this.batch = batch;
         }
 
         public interface TextureCreator {
-            void createTexture(TextureModle modle);
+            void createTexture(TextureCreatorModel model);
         }
 
 
         public TextureRegion createTextureRegion(TextureCreator textureCreator) {
-            TextureModle textureModle = new TextureModle();
-            textureCreator.createTexture(textureModle);
+            TextureCreatorModel model = new TextureCreatorModel();
+            textureCreator.createTexture(model);
+
+            frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
             frameBuffer.begin();
-            Gdx.gl.glClearColor(textureModle.glClearColor_red, textureModle.glClearColor_green, textureModle.glClearColor_blue, textureModle.glClearColor_alpha);
+            Gdx.gl.glClearColor(model.glClearColor_red, model.glClearColor_green, model.glClearColor_blue, model.glClearColor_alpha);
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
             batch.begin();
 
-            textureModle.getDrawTarget().draw(batch, textureModle.getActorDrawedAlpha());
+            model.getDrawTarget().draw(batch, model.getActorDrawedAlpha());
 
             batch.end();
             frameBuffer.end();
 
             Texture texture = frameBuffer.getColorBufferTexture();
 
-            return textureModle.getTextureRegion(texture);
+
+            return model.getTextureRegion(texture);
+        }
+
+        public void dispose() {
+            frameBuffer.dispose();
         }
 
 

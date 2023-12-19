@@ -3,10 +3,12 @@ package idv.kuan.flashcard.gdx.game.test;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -39,6 +41,9 @@ public class TestScreen5 implements Screen {
     Viewport viewport;
 
     VersionHelper versionHelper;
+
+    CardTextureUtil.CardTextureCreator cardTextureCreator1;
+    CardTextureUtil.CardTextureCreator cardTextureCreator2;
     SpriteBatch batch;
     Texture img;
 
@@ -222,7 +227,12 @@ public class TestScreen5 implements Screen {
                 }
 
 
-                Card card = new Card(createFrontCardWithQuestionTexture(c1, scaleFactor, msg, textFieldStyle), createBackCardTexture(c1));
+                cardTextureCreator1 = CardTextureUtil.getCardTextureCreator(batch);
+                cardTextureCreator2 = CardTextureUtil.getCardTextureCreator(batch);
+
+                Card card = new Card(createFrontCardTexture(cardTextureCreator1, c1, scaleFactor, msg, textFieldStyle)
+                        , createBackCardTexture(cardTextureCreator2, c1));
+
 
                 card.setWord(c1.getWord());
 
@@ -324,13 +334,14 @@ public class TestScreen5 implements Screen {
 
     }
 
-    private TextureRegion createFrontCardWithQuestionTexture(Card card, float scaleFactor, String msg, TextField.TextFieldStyle textFieldStyle) {
-        CardTextureUtil.CardTextureCreator cardTextureCreator = CardTextureUtil.getCardTextureCreator();
+    private TextureRegion createFrontCardTexture(CardTextureUtil.CardTextureCreator cardTextureCreator
+            , Card card, float scaleFactor, String msg, TextField.TextFieldStyle textFieldStyle) {
+
         TextureRegion textureRegion = cardTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.TextureCreator() {
             @Override
-            public void createTexture(CardTextureUtil.TextureModle modle) {
-                Table table1 = new Table();
-                table1.setSize(cardWidth * 20 / scaleFactor, cardHeight * 10 / scaleFactor);
+            public void createTexture(CardTextureUtil.TextureCreatorModel model) {
+                Table table = new Table();
+                table.setSize(cardWidth * 20 / scaleFactor, cardHeight * 10 / scaleFactor);
 
 
                 TextField textField1 = new TextField(msg, textFieldStyle);
@@ -339,25 +350,26 @@ public class TestScreen5 implements Screen {
 
                 Image imageFront = new Image(card.getFrontTextureRegion());
 
-                table1.add(textField1).size(cardWidth * 20 / scaleFactor, cardHeight * 2 / scaleFactor);
-                table1.row();
-                table1.add(imageFront).width(cardWidth * 20 / scaleFactor).height(cardHeight * 8 / scaleFactor);
+                table.add(textField1).size(cardWidth * 20 / scaleFactor, cardHeight * 2 / scaleFactor);
+                table.row();
+                table.add(imageFront).width(cardWidth * 20 / scaleFactor).height(cardHeight * 8 / scaleFactor);
 
-                modle.setDrawTarget(table1, (int) (cardWidth * 20 / scaleFactor), (int) (cardHeight * 10 / scaleFactor));
+                model.setDrawTarget(table, (int) (cardWidth * 20 / scaleFactor), (int) (cardHeight * 10 / scaleFactor));
 
 
             }
         });
+
         textureRegion.flip(false, true);
         return textureRegion;
     }
 
 
-    private TextureRegion createBackCardTexture(Card card) {
-        CardTextureUtil.CardTextureCreator cardTextureCreator = CardTextureUtil.getCardTextureCreator();
+    private TextureRegion createBackCardTexture(CardTextureUtil.CardTextureCreator cardTextureCreator, Card card) {
+
         TextureRegion textureRegion = cardTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.TextureCreator() {
             @Override
-            public void createTexture(CardTextureUtil.TextureModle modle) {
+            public void createTexture(CardTextureUtil.TextureCreatorModel model) {
                 Table table = new Table();
                 table.setSize(cardWidth * 20, cardHeight * 10);
 
@@ -365,11 +377,12 @@ public class TestScreen5 implements Screen {
 
                 table.add(imageBack).width(cardWidth * 20).height(cardHeight * 10);
 
-                modle.setDrawTarget(table);
+                model.setDrawTarget(table);
 
 
             }
         });
+
         textureRegion.flip(false, true);
         return textureRegion;
     }
@@ -408,6 +421,8 @@ public class TestScreen5 implements Screen {
 
     @Override
     public void dispose() {
+        cardTextureCreator1.dispose();
+        cardTextureCreator2.dispose();
         batch.dispose();
         img.dispose();
         stage.dispose();
