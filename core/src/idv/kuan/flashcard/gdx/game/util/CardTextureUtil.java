@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.utils.ScreenUtils;
 
 public class CardTextureUtil {
 
@@ -23,6 +22,7 @@ public class CardTextureUtil {
         //glClearColor
         float glClearColor_red = 0, glClearColor_green = 0, glClearColor_blue = 0, glClearColor_alpha = 0;
         int x, y, width, height;
+        boolean flipX, flipY = true;
 
         float actorAlpha = 1;
 
@@ -33,6 +33,10 @@ public class CardTextureUtil {
             this.glClearColor_alpha = alpha;
         }
 
+        void flip(boolean x, boolean y) {
+            this.flipX = x;
+            this.flipY = y;
+        }
 
         public void setDrawTarget(Actor drawTarget) {
             this.drawTarget = drawTarget;
@@ -69,8 +73,9 @@ public class CardTextureUtil {
                 this.height = texture.getHeight();
             }
 
-
-            return new TextureRegion(texture, x, y, width, height);
+            TextureRegion textureRegion = new TextureRegion(texture, x, y, width, height);
+            textureRegion.flip(flipX, flipY);
+            return textureRegion;
         }
 
 
@@ -79,21 +84,24 @@ public class CardTextureUtil {
     public static class CardTextureCreator {
         SpriteBatch batch;
         FrameBuffer frameBuffer;
+        TextureRegion currentTextureRegion;
 
         private CardTextureCreator(SpriteBatch batch) {
             this.batch = batch;
+            frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
         }
 
-        public interface TextureCreator {
+
+        public interface ITextureCreator {
             void createTexture(TextureCreatorModel model);
         }
 
 
-        public TextureRegion createTextureRegion(TextureCreator textureCreator) {
+        public CardTextureCreator createTextureRegion(ITextureCreator iTextureCreator) {
             TextureCreatorModel model = new TextureCreatorModel();
-            textureCreator.createTexture(model);
+            iTextureCreator.createTexture(model);
 
-            frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
+
             frameBuffer.begin();
             Gdx.gl.glClearColor(model.glClearColor_red, model.glClearColor_green, model.glClearColor_blue, model.glClearColor_alpha);
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -104,10 +112,15 @@ public class CardTextureUtil {
             batch.end();
             frameBuffer.end();
 
+
             Texture texture = frameBuffer.getColorBufferTexture();
+            currentTextureRegion = model.getTextureRegion(texture);
 
+            return this;
+        }
 
-            return model.getTextureRegion(texture);
+        public TextureRegion getTextureRegion() {
+            return this.currentTextureRegion;
         }
 
         public void dispose() {

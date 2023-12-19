@@ -3,12 +3,10 @@ package idv.kuan.flashcard.gdx.game.test;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -26,7 +24,9 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,21 +34,15 @@ import idv.kuan.flashcard.gdx.game.database.dao.WordDao;
 import idv.kuan.flashcard.gdx.game.database.entity.Word;
 import idv.kuan.flashcard.gdx.game.util.CardTextureUtil;
 import idv.kuan.flashcard.gdx.game.util.StyleUtil;
-import idv.kuan.libs.utils.VersionHelper;
+
 
 public class TestScreen5 implements Screen {
     private Stage stage;
     Viewport viewport;
-
-    VersionHelper versionHelper;
-
-    CardTextureUtil.CardTextureCreator cardTextureCreator1;
-    CardTextureUtil.CardTextureCreator cardTextureCreator2;
     SpriteBatch batch;
     Texture img;
+    ArrayList<Card> cards = new ArrayList<>();
 
-    TextField textField;
-    TextField testTextField;
 
     final int cardWidth = 96, cardHeight = 108, padding = 10;
 
@@ -64,19 +58,40 @@ public class TestScreen5 implements Screen {
 
     }
 
-    class Card {
+    interface TextureCreatorEquipable {
+
+        TextureRegion getTextureRegion(String name);
+
+        void createTextureRegion(String name, CardTextureUtil.CardTextureCreator.ITextureCreator iTextureCreator);
+
+        void dispose();
+    }
+
+    class Card implements TextureCreatorEquipable {
+        public static final String FRONT = "front";
+        public static final String BACK = "back";
         boolean isFlipedToFront = false;//背面
-        TextureRegion frontTextureRegion;
-        TextureRegion backTextureRegion;
+        TextureRegion baseFrontTextureRegion;
+        TextureRegion baseBackTextureRegion;
         Word word;
 
+        Map<String, CardTextureUtil.CardTextureCreator> creators = new HashMap();
+
+        public Card() {
+
+        }
+
         public Card(TextureRegion frontTextureRegion, TextureRegion backTextureRegion) {
-            this.frontTextureRegion = frontTextureRegion;
-            this.backTextureRegion = backTextureRegion;
+            this.baseFrontTextureRegion = frontTextureRegion;
+            this.baseBackTextureRegion = backTextureRegion;
         }
 
         public TextureRegion getCurrentTextureRegion() {
-            return isFlipedToFront ? frontTextureRegion : backTextureRegion;
+            return isFlipedToFront ? this.creators.get(FRONT).getTextureRegion() : this.creators.get(BACK).getTextureRegion();
+        }
+
+        public void setCreator(String name, CardTextureUtil.CardTextureCreator creator) {
+            this.creators.put(name, creator);
         }
 
         public void flipToFront(boolean flipToFront) {
@@ -95,27 +110,45 @@ public class TestScreen5 implements Screen {
             this.word = word;
         }
 
-        public TextureRegion getFrontTextureRegion() {
-            return frontTextureRegion;
+        public TextureRegion getBaseFrontTextureRegion() {
+            return this.baseFrontTextureRegion;
         }
 
-        public TextureRegion getBackTextureRegion() {
-            return backTextureRegion;
+        public TextureRegion getBaseBackTextureRegion() {
+            return this.baseBackTextureRegion;
+        }
+
+        @Override
+        public TextureRegion getTextureRegion(String name) {
+            return this.creators.get(name).getTextureRegion();
+        }
+
+        @Override
+        public void createTextureRegion(String name, CardTextureUtil.CardTextureCreator.ITextureCreator iTextureCreator) {
+            this.creators.get(name).createTextureRegion(iTextureCreator);
+
+        }
+
+        @Override
+        public void dispose() {
+            this.creators.values().forEach(CardTextureUtil.CardTextureCreator::dispose);
         }
 
         @Override
         public String toString() {
             return "Card{" +
                     "isFlipedToFront=" + isFlipedToFront +
-                    ", frontTextureRegion=" + frontTextureRegion +
-                    ", backTextureRegion=" + backTextureRegion +
                     ", word=" + word +
+                    ", creators=" + creators +
                     '}';
         }
+
+
     }
 
 
     @Override
+    @SuppressWarnings("GDXJavaFlushInsideLoop")
     public void show() {
 
         Table tb = new Table();
@@ -227,12 +260,49 @@ public class TestScreen5 implements Screen {
                 }
 
 
-                cardTextureCreator1 = CardTextureUtil.getCardTextureCreator(batch);
-                cardTextureCreator2 = CardTextureUtil.getCardTextureCreator(batch);
+                CardTextureUtil.CardTextureCreator cardFrontTextureCreator = CardTextureUtil.getCardTextureCreator(batch);
+                CardTextureUtil.CardTextureCreator cardBackTextureCreator = CardTextureUtil.getCardTextureCreator(batch);
 
-                Card card = new Card(createFrontCardTexture(cardTextureCreator1, c1, scaleFactor, msg, textFieldStyle)
-                        , createBackCardTexture(cardTextureCreator2, c1));
+                String finalMsg = msg;
 
+                Card card = new Card();
+                cards.add(card);
+                card.setCreator(Card.FRONT, cardFrontTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.ITextureCreator() {
+                    @Override
+                    public void createTexture(CardTextureUtil.TextureCreatorModel model) {
+                        Table table = new Table();
+                        table.setSize(cardWidth * 20 / scaleFactor, cardHeight * 10 / scaleFactor);
+
+
+                        TextField textField1 = new TextField(finalMsg, textFieldStyle);
+                        textField1.setAlignment(Align.center);
+
+
+                        Image imageFront = new Image(c1.getBaseFrontTextureRegion());
+
+                        table.add(textField1).size(cardWidth * 20 / scaleFactor, cardHeight * 2 / scaleFactor);
+                        table.row();
+                        table.add(imageFront).width(cardWidth * 20 / scaleFactor).height(cardHeight * 8 / scaleFactor);
+
+                        model.setDrawTarget(table, (int) (cardWidth * 20 / scaleFactor), (int) (cardHeight * 10 / scaleFactor));
+
+
+                    }
+                }));
+
+                card.setCreator(Card.BACK, cardBackTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.ITextureCreator() {
+                    @Override
+                    public void createTexture(CardTextureUtil.TextureCreatorModel model) {
+                        Table table = new Table();
+                        table.setSize(cardWidth * 20, cardHeight * 10);
+
+                        Image imageBack = new Image(c1.getBaseBackTextureRegion());
+
+                        table.add(imageBack).width(cardWidth * 20).height(cardHeight * 10);
+
+                        model.setDrawTarget(table);
+                    }
+                }));
 
                 card.setWord(c1.getWord());
 
@@ -334,59 +404,6 @@ public class TestScreen5 implements Screen {
 
     }
 
-    private TextureRegion createFrontCardTexture(CardTextureUtil.CardTextureCreator cardTextureCreator
-            , Card card, float scaleFactor, String msg, TextField.TextFieldStyle textFieldStyle) {
-
-        TextureRegion textureRegion = cardTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.TextureCreator() {
-            @Override
-            public void createTexture(CardTextureUtil.TextureCreatorModel model) {
-                Table table = new Table();
-                table.setSize(cardWidth * 20 / scaleFactor, cardHeight * 10 / scaleFactor);
-
-
-                TextField textField1 = new TextField(msg, textFieldStyle);
-                textField1.setAlignment(Align.center);
-
-
-                Image imageFront = new Image(card.getFrontTextureRegion());
-
-                table.add(textField1).size(cardWidth * 20 / scaleFactor, cardHeight * 2 / scaleFactor);
-                table.row();
-                table.add(imageFront).width(cardWidth * 20 / scaleFactor).height(cardHeight * 8 / scaleFactor);
-
-                model.setDrawTarget(table, (int) (cardWidth * 20 / scaleFactor), (int) (cardHeight * 10 / scaleFactor));
-
-
-            }
-        });
-
-        textureRegion.flip(false, true);
-        return textureRegion;
-    }
-
-
-    private TextureRegion createBackCardTexture(CardTextureUtil.CardTextureCreator cardTextureCreator, Card card) {
-
-        TextureRegion textureRegion = cardTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.TextureCreator() {
-            @Override
-            public void createTexture(CardTextureUtil.TextureCreatorModel model) {
-                Table table = new Table();
-                table.setSize(cardWidth * 20, cardHeight * 10);
-
-                Image imageBack = new Image(card.getBackTextureRegion());
-
-                table.add(imageBack).width(cardWidth * 20).height(cardHeight * 10);
-
-                model.setDrawTarget(table);
-
-
-            }
-        });
-
-        textureRegion.flip(false, true);
-        return textureRegion;
-    }
-
 
     @Override
     public void render(float delta) {
@@ -421,10 +438,10 @@ public class TestScreen5 implements Screen {
 
     @Override
     public void dispose() {
-        cardTextureCreator1.dispose();
-        cardTextureCreator2.dispose();
+
         batch.dispose();
         img.dispose();
         stage.dispose();
+        cards.forEach(Card::dispose);
     }
 }
