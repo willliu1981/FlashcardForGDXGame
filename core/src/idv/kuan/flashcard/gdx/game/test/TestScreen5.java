@@ -2,7 +2,9 @@ package idv.kuan.flashcard.gdx.game.test;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -48,6 +50,7 @@ public class TestScreen5 implements Screen {
 
 
     public TestScreen5() {
+
         batch = new SpriteBatch();
         img = new Texture("badlogic.jpg");
 
@@ -74,6 +77,7 @@ public class TestScreen5 implements Screen {
         TextureRegion baseFrontTextureRegion;
         TextureRegion baseBackTextureRegion;
         Word word;
+        Texture pic;
 
         Map<String, CardTextureUtil.CardTextureCreator> creators = new HashMap();
 
@@ -108,6 +112,14 @@ public class TestScreen5 implements Screen {
 
         public void setWord(Word word) {
             this.word = word;
+        }
+
+        public Texture getPic() {
+            return pic;
+        }
+
+        public void setPic(Texture pic) {
+            this.pic = pic;
         }
 
         public TextureRegion getBaseFrontTextureRegion() {
@@ -216,18 +228,20 @@ public class TestScreen5 implements Screen {
         Collections.shuffle(randomElements);
 
         StyleUtil.DynamicCharacters dynamicCharacters = new StyleUtil.DynamicCharacters();
-        List<Card> cardList = new ArrayList<>();
+        List<Card> baseCardList = new ArrayList<>();
         randomElements.forEach(x -> {
 
-            Card qc = new QuestionCard(new TextureRegion(questionTexture, questionTexture.getWidth(), questionTexture.getHeight())
-                    , new TextureRegion(cardBackTexture, cardBackTexture.getWidth(), cardBackTexture.getHeight()));
-            Card ac = new AnswerCard(new TextureRegion(answerTexture, answerTexture.getWidth(), answerTexture.getHeight())
-                    , new TextureRegion(cardBackTexture, cardBackTexture.getWidth(), cardBackTexture.getHeight()));
+            Card qc = new QuestionCard(new TextureRegion(questionTexture), new TextureRegion(cardBackTexture));
+            Texture texture = Math.random() > 0.5 ? cardTextures[(int) (Math.random() * 9)] : null;
+            qc.setPic(texture);
+            Card ac = new AnswerCard(new TextureRegion(answerTexture), new TextureRegion(cardBackTexture));
+            ac.setPic(texture);
+
             qc.setWord(x);
             ac.setWord(x);
 
-            cardList.add(qc);
-            cardList.add(ac);
+            baseCardList.add(qc);
+            baseCardList.add(ac);
             dynamicCharacters.add(x.getTerm()).add(x.getTranslation());
 
 
@@ -240,7 +254,7 @@ public class TestScreen5 implements Screen {
         BitmapFont font = StyleUtil.generateFontWithAddedChars(dynamicCharacters, 20);
         TextField.TextFieldStyle textFieldStyle = StyleUtil.generateDefaultTextFieldStyle(font);
 
-        Collections.shuffle(cardList);
+        Collections.shuffle(baseCardList);
 
 
         for (int i = 0, idx1 = 0, indx2 = 0; i < rows; i++) {
@@ -249,7 +263,7 @@ public class TestScreen5 implements Screen {
 
             for (int j = 0; j < cols; j++) {
                 // 創建一個圖像元件，並將其添加到表格中
-                Card c1 = cardList.get(idx1);
+                Card c1 = baseCardList.get(idx1);
                 idx1++;
 
                 String msg = null;
@@ -260,37 +274,89 @@ public class TestScreen5 implements Screen {
                 }
 
 
-                CardTextureUtil.CardTextureCreator cardFrontTextureCreator = CardTextureUtil.getCardTextureCreator(batch);
-                CardTextureUtil.CardTextureCreator cardBackTextureCreator = CardTextureUtil.getCardTextureCreator(batch);
-
                 String finalMsg = msg;
 
                 Card card = new Card();
                 cards.add(card);
-                card.setCreator(Card.FRONT, cardFrontTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.ITextureCreator() {
-                    @Override
-                    public void createTexture(CardTextureUtil.TextureCreatorModel model) {
-                        Table table = new Table();
-                        table.setSize(cardWidth * 20 / scaleFactor, cardHeight * 10 / scaleFactor);
+
+                //front with question
+                if (QuestionCard.class.isInstance(c1)) {
+
+                    card.setCreator(Card.FRONT, CardTextureUtil.getCardTextureCreator(batch).createTextureRegion(new CardTextureUtil.CardTextureCreator.ITextureCreator() {
+                        @Override
+                        public void createTexture(CardTextureUtil.TextureCreatorModel model) {
+                            Table table = new Table();
+                            table.setSize(cardWidth * 20 / scaleFactor, cardHeight * 10 / scaleFactor);
+                            table.setBackground(new TextureRegionDrawable(c1.getBaseFrontTextureRegion()));
+
+                            textFieldStyle.fontColor = Color.YELLOW;
+                            TextField textField1 = new TextField(finalMsg, textFieldStyle);
+                            textField1.setAlignment(Align.center);
+
+                            // 設定背景的Drawable為半透明
+                            Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+                            pixmap.setColor(new Color(0.2f, 0.6f, 1, 0.8f)); // RGBA顏色，A是透明度
+                            pixmap.fill();
+                            TextureRegionDrawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(new Texture(pixmap)));
+                            pixmap.dispose();
+
+                            textFieldStyle.background = backgroundDrawable;
+
+                            if (c1.getPic() != null) {
+                                Image imageFront = new Image(new TextureRegion(c1.getPic()));
+                                table.add(imageFront).width(cardWidth * 20 / scaleFactor * 0.8f).height(cardHeight * 8 / scaleFactor * 0.8f);
+                                table.row();
+
+                            }
+
+                            table.add(textField1).size(cardWidth * 20 / scaleFactor * 0.8f, cardHeight * 2 / scaleFactor);
+
+                            model.setDrawTarget(table, (int) (cardWidth * 20 / scaleFactor), (int) (cardHeight * 10 / scaleFactor));
+
+                        }
+                    }));
+
+                } else if (AnswerCard.class.isInstance(c1)) {
+                    //front with answer
+                    card.setCreator(Card.FRONT, CardTextureUtil.getCardTextureCreator(batch).createTextureRegion(new CardTextureUtil.CardTextureCreator.ITextureCreator() {
+                        @Override
+                        public void createTexture(CardTextureUtil.TextureCreatorModel model) {
+                            Table table = new Table();
+                            table.setSize(cardWidth * 20 / scaleFactor, cardHeight * 10 / scaleFactor);
+                            table.setBackground(new TextureRegionDrawable(c1.getBaseFrontTextureRegion()));
+
+                            textFieldStyle.fontColor = Color.BLUE;
+                            TextField textField1 = new TextField(finalMsg, textFieldStyle);
+                            textField1.setAlignment(Align.center);
+
+                            // 設定背景的Drawable為半透明
+                            Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+                            pixmap.setColor(new Color(1, 1, 0.3f, 0.7f)); // RGBA顏色，A是透明度
+                            pixmap.fill();
+                            TextureRegionDrawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(new Texture(pixmap)));
+                            pixmap.dispose();
+
+                            textFieldStyle.background = backgroundDrawable;
 
 
-                        TextField textField1 = new TextField(finalMsg, textFieldStyle);
-                        textField1.setAlignment(Align.center);
+                            if (c1.getPic() != null) {
+                                Image imageFront = new Image(new TextureRegion(c1.getPic()));
+                                table.add(imageFront).width(cardWidth * 20 / scaleFactor * 0.8f).height(cardHeight * 8 / scaleFactor * 0.8f);
+                                table.row();
+
+                            }
+
+                            table.add(textField1).size(cardWidth * 20 / scaleFactor * 0.8f, cardHeight * 2 / scaleFactor);
+
+                            model.setDrawTarget(table, (int) (cardWidth * 20 / scaleFactor), (int) (cardHeight * 10 / scaleFactor));
 
 
-                        Image imageFront = new Image(c1.getBaseFrontTextureRegion());
+                        }
+                    }));
+                }
 
-                        table.add(textField1).size(cardWidth * 20 / scaleFactor, cardHeight * 2 / scaleFactor);
-                        table.row();
-                        table.add(imageFront).width(cardWidth * 20 / scaleFactor).height(cardHeight * 8 / scaleFactor);
-
-                        model.setDrawTarget(table, (int) (cardWidth * 20 / scaleFactor), (int) (cardHeight * 10 / scaleFactor));
-
-
-                    }
-                }));
-
-                card.setCreator(Card.BACK, cardBackTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.ITextureCreator() {
+                //back
+                card.setCreator(Card.BACK, CardTextureUtil.getCardTextureCreator(batch).createTextureRegion(new CardTextureUtil.CardTextureCreator.ITextureCreator() {
                     @Override
                     public void createTexture(CardTextureUtil.TextureCreatorModel model) {
                         Table table = new Table();
