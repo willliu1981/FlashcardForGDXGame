@@ -2,6 +2,7 @@ package idv.kuan.flashcard.gdx.game.test;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -11,6 +12,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -35,6 +37,7 @@ import java.util.stream.Stream;
 import idv.kuan.flashcard.gdx.game.database.dao.WordDao;
 import idv.kuan.flashcard.gdx.game.database.entity.Word;
 import idv.kuan.flashcard.gdx.game.util.CardTextureUtil;
+import idv.kuan.flashcard.gdx.game.util.SoundAction;
 import idv.kuan.flashcard.gdx.game.util.StyleUtil;
 
 
@@ -177,8 +180,8 @@ public class TestScreen5 implements Screen {
 
         Texture cardBackTexture = new Texture("test/b1.png");
 
-        Texture questionTexture = new Texture("test/q1.png");
-        Texture answerTexture = new Texture("test/a1.png");
+        Texture questionTexture = new Texture("test/q3.png");
+        Texture answerTexture = new Texture("test/a2.png");
 
 
         class QuestionCard extends Card {
@@ -233,9 +236,9 @@ public class TestScreen5 implements Screen {
 
             Card qc = new QuestionCard(new TextureRegion(questionTexture), new TextureRegion(cardBackTexture));
             Texture texture = Math.random() > 0.5 ? cardTextures[(int) (Math.random() * 9)] : null;
-            qc.setPic(texture);
+            //qc.setPic(texture);
             Card ac = new AnswerCard(new TextureRegion(answerTexture), new TextureRegion(cardBackTexture));
-            ac.setPic(texture);
+            //ac.setPic(texture);
 
             qc.setWord(x);
             ac.setWord(x);
@@ -289,13 +292,13 @@ public class TestScreen5 implements Screen {
                             table.setSize(cardWidth * 20 / scaleFactor, cardHeight * 10 / scaleFactor);
                             table.setBackground(new TextureRegionDrawable(c1.getBaseFrontTextureRegion()));
 
-                            textFieldStyle.fontColor = Color.YELLOW;
+                            textFieldStyle.fontColor = Color.WHITE;
                             TextField textField1 = new TextField(finalMsg, textFieldStyle);
                             textField1.setAlignment(Align.center);
 
                             // 設定背景的Drawable為半透明
                             Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-                            pixmap.setColor(new Color(0.2f, 0.6f, 1, 0.8f)); // RGBA顏色，A是透明度
+                            pixmap.setColor(new Color(0.1f, 0.2f, 1, 0.8f)); // RGBA顏色，A是透明度
                             pixmap.fill();
                             TextureRegionDrawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(new Texture(pixmap)));
                             pixmap.dispose();
@@ -325,13 +328,13 @@ public class TestScreen5 implements Screen {
                             table.setSize(cardWidth * 20 / scaleFactor, cardHeight * 10 / scaleFactor);
                             table.setBackground(new TextureRegionDrawable(c1.getBaseFrontTextureRegion()));
 
-                            textFieldStyle.fontColor = Color.BLUE;
+                            textFieldStyle.fontColor = Color.BLACK;
                             TextField textField1 = new TextField(finalMsg, textFieldStyle);
                             textField1.setAlignment(Align.center);
 
                             // 設定背景的Drawable為半透明
                             Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-                            pixmap.setColor(new Color(1, 1, 0.3f, 0.7f)); // RGBA顏色，A是透明度
+                            pixmap.setColor(new Color(1, 1, 0.1f, 0.8f)); // RGBA顏色，A是透明度
                             pixmap.fill();
                             TextureRegionDrawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(new Texture(pixmap)));
                             pixmap.dispose();
@@ -339,14 +342,13 @@ public class TestScreen5 implements Screen {
                             textFieldStyle.background = backgroundDrawable;
 
 
+                            table.add(textField1).size(cardWidth * 20 / scaleFactor * 0.8f, cardHeight * 2 / scaleFactor);
                             if (c1.getPic() != null) {
                                 Image imageFront = new Image(new TextureRegion(c1.getPic()));
-                                table.add(imageFront).width(cardWidth * 20 / scaleFactor * 0.8f).height(cardHeight * 8 / scaleFactor * 0.8f);
                                 table.row();
+                                table.add(imageFront).width(cardWidth * 20 / scaleFactor * 0.8f).height(cardHeight * 8 / scaleFactor * 0.8f);
 
                             }
-
-                            table.add(textField1).size(cardWidth * 20 / scaleFactor * 0.8f, cardHeight * 2 / scaleFactor);
 
                             model.setDrawTarget(table, (int) (cardWidth * 20 / scaleFactor), (int) (cardHeight * 10 / scaleFactor));
 
@@ -400,6 +402,41 @@ public class TestScreen5 implements Screen {
 
                         float minRotateDst = -1f;
                         float maxRotateDst = 1f;
+
+
+                        // 加載音效
+                        Sound soundEffect;
+                        if (card.isFlipedToFront) {
+                            //to front
+
+
+                            Sound mySound = Gdx.audio.newSound(Gdx.files.internal("sounds/re_flip1.wav"));
+                            long soundId = mySound.play(); // 需要保存这个ID来稍后控制音效
+                            float soundDuration = 0.3f; // 声音应该在2秒内从无到有
+
+// 创建一个曲线插值，例如线性或加速插值
+                            Interpolation interpolation = Interpolation.circleIn;
+
+// 创建并添加Action到某个Actor，这样它就会执行
+                            SoundAction soundAction = new SoundAction(mySound, soundId, soundDuration, 0.2f, 0.7f, interpolation);
+                            img.addAction(soundAction);
+
+                        } else {
+                            //to back
+
+
+                            Sound mySound = Gdx.audio.newSound(Gdx.files.internal("sounds/flip1.wav"));
+                            long soundId = mySound.play(); // 需要保存这个ID来稍后控制音效
+                            float soundDuration = 0.3f; // 声音应该在2秒内从无到有
+
+// 创建一个曲线插值，例如线性或加速插值
+                            Interpolation interpolation = Interpolation.circleIn;
+
+// 创建并添加Action到某个Actor，这样它就会执行
+                            SoundAction soundAction = new SoundAction(mySound, soundId, soundDuration, 0.5f, 0.1f, interpolation);
+                            img.addAction(soundAction);
+                        }
+
 
                         // 记录原始位置
                         final float originalX = img.getX();
