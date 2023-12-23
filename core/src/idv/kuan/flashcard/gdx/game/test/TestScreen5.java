@@ -181,7 +181,7 @@ public class TestScreen5 implements Screen {
         Texture cardBackTexture = new Texture("test/b1.png");
 
         Texture questionTexture = new Texture("test/q3.png");
-        Texture answerTexture = new Texture("test/a2.png");
+        Texture answerTexture = new Texture("test/a3.png");
 
 
         class QuestionCard extends Card {
@@ -298,7 +298,7 @@ public class TestScreen5 implements Screen {
 
                             // 設定背景的Drawable為半透明
                             Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-                            pixmap.setColor(new Color(0.1f, 0.2f, 1, 0.8f)); // RGBA顏色，A是透明度
+                            pixmap.setColor(new Color(0.1f, 0.2f, 1, 0.01f)); // RGBA顏色，A是透明度
                             pixmap.fill();
                             TextureRegionDrawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(new Texture(pixmap)));
                             pixmap.dispose();
@@ -334,7 +334,7 @@ public class TestScreen5 implements Screen {
 
                             // 設定背景的Drawable為半透明
                             Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-                            pixmap.setColor(new Color(1, 1, 0.1f, 0.8f)); // RGBA顏色，A是透明度
+                            pixmap.setColor(new Color(1, 1, 0.9f, 0.01f)); // RGBA顏色，A是透明度
                             pixmap.fill();
                             TextureRegionDrawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(new Texture(pixmap)));
                             pixmap.dispose();
@@ -405,7 +405,6 @@ public class TestScreen5 implements Screen {
 
 
                         // 加載音效
-                        Sound soundEffect;
                         if (card.isFlipedToFront) {
                             //to front
 
