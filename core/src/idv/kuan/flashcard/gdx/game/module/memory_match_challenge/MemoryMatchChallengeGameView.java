@@ -11,12 +11,14 @@ import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.actions.DelayAction;
 import com.badlogic.gdx.scenes.scene2d.actions.RunnableAction;
 import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
 import java.sql.SQLException;
@@ -34,7 +36,7 @@ public class MemoryMatchChallengeGameView extends GameView {
     final static int CARD_WIDTH = 100, CARD_HEIGHT = 100;
     final float ANIM_DURATIONTIME = 0.75f;
 
-    private List<CardHandle> cardHandles;
+    private List<DefCardHandle> cardHandles;
     private final int CARDCOUNT = 12;
     private TextureRegion frontQuestionTexReg;
     private TextureRegion frontAnswerTexReg;
@@ -43,6 +45,147 @@ public class MemoryMatchChallengeGameView extends GameView {
     private Texture backCardAminsTexture;
 
 
+    private static class DefCardHandle extends CardHandle {
+
+        private TextureRegion frontBackgroundTexReg;
+        private TextureRegion backBackgroundTexReg;
+        private Sound flipToFrontSound;
+        private Sound flipToBackSound;
+        private boolean isFrontState;
+
+
+        public DefCardHandle(Image background,
+                             TextureRegion frontBackgroundTexReg, TextureRegion backBackgroundTexReg,
+                             String flipToFrontSoundFilePath, String flipToFBackSoundFilePath) {
+            super(background);
+            this.frontBackgroundTexReg = frontBackgroundTexReg;
+            this.backBackgroundTexReg = backBackgroundTexReg;
+            this.flipToFrontSound = Gdx.audio.newSound(Gdx.files.internal(flipToFrontSoundFilePath));
+            this.flipToBackSound = Gdx.audio.newSound(Gdx.files.internal(flipToFBackSoundFilePath));
+            this.isFrontState = false;
+        }
+
+        @Override
+        protected void initialize() {
+            // 设置卡片的原点为中心
+            this.background.setOrigin(CARD_WIDTH / 2, CARD_HEIGHT * 2 / 2);
+
+            //sound listener --begin
+            this.background.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    super.clicked(event, x, y);
+
+                    if (DefCardHandle.this.isFrontState) {
+                        DefCardHandle.this.playFlipToFrontWithSoundAction();
+                    } else {
+                        DefCardHandle.this.playFlipToBackWithSoundAction();
+                    }
+                }
+            });
+            //sound --end
+
+            //image listener ==begin
+            this.background.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    super.clicked(event, x, y);
+
+                    float DT_TOBACK = 0.22f;
+                    float DT_TOFRONT = 0.33f;
+
+                    float minMoveDst = -5;
+                    float maxMoveDst = 5;
+
+                    float minRotateDst = -1f;
+                    float maxRotateDst = 1f;
+
+                    // 记录原始位置
+                    final float originalX = DefCardHandle.this.getBackground().getX();
+                    final float originalY = DefCardHandle.this.getBackground().getY();
+
+
+                    DefCardHandle.this.background.addAction(
+
+
+                            Actions.parallel(
+                                    //move
+                                    Actions.sequence(
+                                            Actions.moveBy(MathUtils.random(minMoveDst / 20, maxMoveDst / 20)
+                                                    , MathUtils.random(minMoveDst / 20, maxMoveDst / 20)
+                                                    , (DefCardHandle.this.isFrontState ? DT_TOBACK : DT_TOFRONT)
+                                                    , Interpolation.smooth)
+                                            , Actions.moveBy(MathUtils.random(minMoveDst, maxMoveDst), MathUtils.random(minMoveDst, maxMoveDst)
+                                                    , (DefCardHandle.this.isFrontState ? DT_TOBACK : DT_TOFRONT) - Math.min(DT_TOBACK, DT_TOFRONT) / 2
+                                                    , Interpolation.bounceIn)
+                                            , Actions.moveTo(originalX, originalY, Math.min(DT_TOBACK, DT_TOFRONT) / 2, Interpolation.bounceOut))
+
+                                    //rotate
+                                    , Actions.sequence(Actions.rotateBy(MathUtils.random(minRotateDst / 20, maxRotateDst / 20)
+                                                    , (DefCardHandle.this.isFrontState ? DT_TOBACK : DT_TOFRONT)
+                                                    , Interpolation.smooth)
+                                            , Actions.rotateBy(MathUtils.random(minRotateDst, maxRotateDst)
+                                                    , (DefCardHandle.this.isFrontState ? DT_TOBACK : DT_TOFRONT) - Math.min(DT_TOBACK, DT_TOFRONT) / 2
+                                                    , Interpolation.bounceIn)
+                                            , Actions.rotateTo(0, Math.min(DT_TOBACK, DT_TOFRONT) / 2, Interpolation.bounceOut))
+
+                                    //alpha
+                                    , Actions.sequence(Actions.alpha(0.0f, DefCardHandle.this.isFrontState ? DT_TOBACK : DT_TOFRONT)
+                                            , Actions.alpha(1f, DefCardHandle.this.isFrontState ? DT_TOBACK / 2 : DT_TOFRONT / 2))
+
+                                    //scale
+                                    , Actions.sequence(
+                                            Actions.scaleTo(0, 1, DefCardHandle.this.isFrontState ? DT_TOBACK : DT_TOFRONT
+                                                    , Interpolation.circleOut), // 縮放動畫，持續0.5秒
+                                            Actions.run(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    DefCardHandle.this.changeFlipedState();
+
+                                                    DefCardHandle.this.getBackground().setDrawable(new TextureRegionDrawable(DefCardHandle.this.getCurrentTextureRegion()));
+
+                                                }
+                                            })
+                                            , Actions.scaleTo(1, 1, DefCardHandle.this.isFrontState ? DT_TOBACK : DT_TOFRONT
+                                                    , (DefCardHandle.this.isFrontState ? Interpolation.bounceOut : Interpolation.circleOut))
+                                    )));
+                    //image listener ==end
+
+                }
+            });
+
+
+        }
+
+        private TextureRegion getCurrentTextureRegion() {
+            return this.isFrontState ? this.frontBackgroundTexReg : this.backBackgroundTexReg;
+        }
+
+        private void changeFlipedState() {
+            this.isFrontState = !this.isFrontState;
+        }
+
+        private SoundAction playFlipToFrontWithSoundAction() {
+            SoundAction soundAction = new SoundAction(flipToFrontSound);
+            background.addAction(soundAction);
+            return soundAction;
+        }
+
+        private SoundAction playFlipToBackWithSoundAction() {
+            SoundAction soundAction = new SoundAction(flipToBackSound);
+            background.addAction(soundAction);
+            return soundAction;
+        }
+
+        public boolean isFrontState() {
+            return isFrontState;
+        }
+
+        public Image getBackground() {
+            return background;
+        }
+    }
+
     @Override
     public void initialize() {
         //init texture --begin
@@ -50,6 +193,9 @@ public class MemoryMatchChallengeGameView extends GameView {
         frontAnswerTexReg = new TextureRegion(new Texture("test/a3.png"));
         backCardTexReg = new TextureRegion(new Texture("test/b1.png"));
         blackCardTexReg = new TextureRegion(new Texture("test/b0.png"));
+        TextureRegion cardBackTexReg = new TextureRegion(new Texture("test/b1.png"));
+        TextureRegion questionTexReg = new TextureRegion(new Texture("test/q3.png"));
+        TextureRegion answerTexReg = new TextureRegion(new Texture("test/a3.png"));
 
         backCardAminsTexture = new Texture("test/bs3.png");
 
@@ -63,13 +209,22 @@ public class MemoryMatchChallengeGameView extends GameView {
         try {
             List<Word> all = dao.findAll();
             for (Word word : all.stream().distinct().limit(CARDCOUNT).collect(Collectors.toList())) {
-                CardHandle cardHandle = new CardHandle();
-                cardHandle.setWord(word);
-                cardHandles.add(cardHandle);
+                Image image1 = new Image(blackCardTexReg);
+                DefCardHandle questionCardHandle = new DefCardHandle(image1,
+                        questionTexReg, cardBackTexReg,
+                        "sounds/water004.wav", "sounds/water002.wav");
+                Image image2 = new Image(blackCardTexReg);
+                DefCardHandle answerCardHandle = new DefCardHandle(image2,
+                        answerTexReg, cardBackTexReg,
+                        "sounds/water004.wav", "sounds/water002.wav");
+
+                questionCardHandle.setWord(word);
+                answerCardHandle.setWord(word);
+                cardHandles.add(questionCardHandle);
+                cardHandles.add(answerCardHandle);
 
             }
 
-            Gdx.app.log("count", "" + cardHandles.size());
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -87,18 +242,21 @@ public class MemoryMatchChallengeGameView extends GameView {
 
         SequenceAction sequenceAction = new SequenceAction();
         Animation<TextureRegion> animation = buildCardCreateAmintions(backCardAminsTexture, ANIM_DURATIONTIME);
-        Sound mySound = Gdx.audio.newSound(Gdx.files.internal("sounds/beast53.wav"));
+
 
         for (int idx = 0, row = 0; row < 4; row++) {
-            for (int col = 0; col < 6; col++) {
-                Image img = new Image(blackCardTexReg);
+            for (int col = 0; col < 6; col++, idx++) {
+                DefCardHandle cardHandle = cardHandles.get(idx);
+                Image img = cardHandle.getBackground();
 
                 RunnableAction runnableAction = new RunnableAction();
                 runnableAction.setRunnable(new Runnable() {
                     @Override
                     public void run() {
+                        Sound sound = Gdx.audio.newSound(Gdx.files.internal("sounds/water001.wav"));
                         cardCreatedActions(img, animation);
-                        soundAction(img, mySound, 2.0f, 1.5f, 0.1f, Interpolation.fastSlow);
+                        soundAction(img, sound, 1.0f, 1.5f, 1.0f, Interpolation.smooth);
+
                     }
                 });
 
@@ -119,7 +277,6 @@ public class MemoryMatchChallengeGameView extends GameView {
         int FRAME_WIDTH = 80;
         int FRAME_HEIGHT = 80;
         float FRAME_DURATION = duration / FRAME_COUNT;
-        Gdx.app.log("fdt", "" + FRAME_DURATION);
 
 
 // 创建一个TextureRegion数组，其中包含所有动画帧
@@ -281,7 +438,6 @@ public class MemoryMatchChallengeGameView extends GameView {
         public boolean act(float delta) {
             elapsedTime += delta;
 
-            Gdx.app.log("d:" + duration, "e:" + elapsedTime);
             if (elapsedTime >= duration) {
                 elapsedTime = duration;
             }

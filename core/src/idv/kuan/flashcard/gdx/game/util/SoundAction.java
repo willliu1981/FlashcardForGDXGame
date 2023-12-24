@@ -14,6 +14,10 @@ public class SoundAction extends Action {
     private Interpolation interpolation;
 
 
+    public SoundAction(Sound sound) {
+        this(sound, sound.play(), 1.0f, 1.0f, 1.0f, Interpolation.fade);
+    }
+
     public SoundAction(Sound sound, long soundId, float duration, float pitchStart, float pitchEnd, Interpolation interpolation) {
         this.sound = sound;
         this.soundId = soundId;

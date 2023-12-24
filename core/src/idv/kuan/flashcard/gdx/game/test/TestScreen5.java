@@ -97,6 +97,7 @@ public class TestScreen5 implements Screen {
             return isFlipedToFront ? this.creators.get(FRONT).getTextureRegion() : this.creators.get(BACK).getTextureRegion();
         }
 
+
         public void setCreator(String name, CardTextureUtil.CardTextureCreator creator) {
             this.creators.put(name, creator);
         }
