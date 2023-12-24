@@ -14,12 +14,12 @@ public class SoundAction extends Action {
     private Interpolation interpolation;
 
 
-    public SoundAction(Sound sound, long soundId, float duration, float start, float end, Interpolation interpolation) {
+    public SoundAction(Sound sound, long soundId, float duration, float pitchStart, float pitchEnd, Interpolation interpolation) {
         this.sound = sound;
         this.soundId = soundId;
         this.duration = duration;
-        this.start = start;
-        this.end = end;
+        this.start = pitchStart;
+        this.end = pitchEnd;
         this.elapsedTime = 0;
         this.interpolation = interpolation;
 

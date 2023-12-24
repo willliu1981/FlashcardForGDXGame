@@ -31,7 +31,9 @@ import idv.kuan.flashcard.gdx.game.module.GameView;
 import idv.kuan.flashcard.gdx.game.util.SoundAction;
 
 public class MemoryMatchChallengeGameView extends GameView {
-    final static int cardWidth = 100, cardHeight = 100;
+    final static int CARD_WIDTH = 100, CARD_HEIGHT = 100;
+    final float ANIM_DURATIONTIME = 0.75f;
+
     private List<CardHandle> cardHandles;
     private final int CARDCOUNT = 12;
     private TextureRegion frontQuestionTexReg;
@@ -49,7 +51,7 @@ public class MemoryMatchChallengeGameView extends GameView {
         backCardTexReg = new TextureRegion(new Texture("test/b1.png"));
         blackCardTexReg = new TextureRegion(new Texture("test/b0.png"));
 
-        backCardAminsTexture = new Texture("test/bs2.png");
+        backCardAminsTexture = new Texture("test/bs3.png");
 
 
         //init texture --end
@@ -78,10 +80,14 @@ public class MemoryMatchChallengeGameView extends GameView {
 
 
     private void createCard() {
+
+
         Table table = new Table();
         table.setFillParent(true);
+
         SequenceAction sequenceAction = new SequenceAction();
-        Animation<TextureRegion> animation = buildCardCreateAmintions(backCardAminsTexture, 2.0f);
+        Animation<TextureRegion> animation = buildCardCreateAmintions(backCardAminsTexture, ANIM_DURATIONTIME);
+        Sound mySound = Gdx.audio.newSound(Gdx.files.internal("sounds/beast53.wav"));
 
         for (int idx = 0, row = 0; row < 4; row++) {
             for (int col = 0; col < 6; col++) {
@@ -92,17 +98,14 @@ public class MemoryMatchChallengeGameView extends GameView {
                     @Override
                     public void run() {
                         cardCreatedActions(img, animation);
-
+                        soundAction(img, mySound, 2.0f, 1.5f, 0.1f, Interpolation.fastSlow);
                     }
                 });
 
-                //DelayAction delayAction = new DelayAction(0.05f);
-
 
                 sequenceAction.addAction(runnableAction);
-                //sequenceAction.addAction(delayAction);
-                table.add(img).size(cardWidth, cardHeight);
-                sequenceAction.addAction(new DelayAction(0.1f));
+                table.add(img).size(CARD_WIDTH, CARD_HEIGHT);
+                sequenceAction.addAction(new DelayAction(0.05f));
             }
             table.row();
         }
@@ -112,17 +115,18 @@ public class MemoryMatchChallengeGameView extends GameView {
     }
 
     private Animation<TextureRegion> buildCardCreateAmintions(Texture texture, float duration) {
-        int FRAME_COUNT = 16;
+        int FRAME_COUNT = 8;
         int FRAME_WIDTH = 80;
         int FRAME_HEIGHT = 80;
-        float FRAME_DURATION = duration;
+        float FRAME_DURATION = duration / FRAME_COUNT;
+        Gdx.app.log("fdt", "" + FRAME_DURATION);
 
 
 // 创建一个TextureRegion数组，其中包含所有动画帧
         TextureRegion[] aminFrames = new TextureRegion[FRAME_COUNT];
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 4; j++) {
-                aminFrames[i] = new TextureRegion(texture
+                aminFrames[i * 4 + j] = new TextureRegion(texture
                         , j * FRAME_WIDTH, i * FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT);
             }
         }
@@ -133,7 +137,7 @@ public class MemoryMatchChallengeGameView extends GameView {
 
     private void cardCreatedActions(Image img, Animation<TextureRegion> animation) {
 
-        AminAction aminAction = new AminAction(img, animation, 2.f, 0f, 2.0f, Interpolation.fade);
+        AminAction aminAction = new AminAction(img, animation, ANIM_DURATIONTIME, Interpolation.fade);
         img.addAction(aminAction);
     }
 
@@ -151,7 +155,7 @@ public class MemoryMatchChallengeGameView extends GameView {
         final float originalY = img.getY();
 
 
-        img.setOrigin(cardWidth / 2, cardHeight / 2);
+        img.setOrigin(CARD_WIDTH / 2, CARD_HEIGHT / 2);
 
         img.addAction(
 
@@ -208,38 +212,19 @@ public class MemoryMatchChallengeGameView extends GameView {
 
     }
 
-    private void soundActions(Image img, boolean isFlipedToFront) {
+
+    private void soundAction(Image img, Sound sound, float soundDuration, float pitchStart, float pitchEnd, Interpolation interpolation) {
         // 加載音效
-        if (isFlipedToFront) {
-            //to front
 
 
-            Sound mySound = Gdx.audio.newSound(Gdx.files.internal("sounds/re_flip1.wav"));
-            long soundId = mySound.play(); // 需要保存这个ID来稍后控制音效
-            float soundDuration = 0.3f; // 声音应该在2秒内从无到有
+        long soundId = sound.play(); // 需要保存这个ID来稍后控制音效
 
-// 创建一个曲线插值，例如线性或加速插值
-            Interpolation interpolation = Interpolation.circleIn;
+        // 创建一个曲线插值，例如线性或加速插值
 
-// 创建并添加Action到某个Actor，这样它就会执行
-            SoundAction soundAction = new SoundAction(mySound, soundId, soundDuration, 0.2f, 0.7f, interpolation);
-            img.addAction(soundAction);
+        // 创建并添加Action到某个Actor，这样它就会执行
+        SoundAction soundAction = new SoundAction(sound, soundId, soundDuration, pitchStart, pitchEnd, interpolation);
+        img.addAction(soundAction);
 
-        } else {
-            //to back
-
-
-            Sound mySound = Gdx.audio.newSound(Gdx.files.internal("sounds/flip1.wav"));
-            long soundId = mySound.play(); // 需要保存这个ID来稍后控制音效
-            float soundDuration = 0.3f; // 声音应该在2秒内从无到有
-
-// 创建一个曲线插值，例如线性或加速插值
-            Interpolation interpolation = Interpolation.circleIn;
-
-// 创建并添加Action到某个Actor，这样它就会执行
-            SoundAction soundAction = new SoundAction(mySound, soundId, soundDuration, 0.5f, 0.1f, interpolation);
-            img.addAction(soundAction);
-        }
     }
 
     public class AnimatedActor extends Actor {
@@ -262,7 +247,7 @@ public class MemoryMatchChallengeGameView extends GameView {
         @Override
         public void draw(Batch batch, float parentAlpha) {
             // 获取当前应显示的帧
-            TextureRegion currentFrame = animation.getKeyFrame(stateTime, true);
+            TextureRegion currentFrame = animation.getKeyFrame(stateTime, false);
 
             // 考虑到Actor的位置和父Alpha值绘制帧
             Color color = getColor(); // 应用父Alpha值(透明度)
@@ -279,20 +264,15 @@ public class MemoryMatchChallengeGameView extends GameView {
     public class AminAction extends Action {
         private Image img;
         Animation<TextureRegion> animation;
-        private float start;
-        private float end;
         private float duration;
         private float elapsedTime;
         private Interpolation interpolation;
 
 
-        public AminAction(Image img, Animation<TextureRegion> animation, float duration
-                , float start, float end, Interpolation interpolation) {
+        public AminAction(Image img, Animation<TextureRegion> animation, float duration, Interpolation interpolation) {
             this.img = img;
             this.animation = animation;
             this.duration = duration;
-            this.start = start;
-            this.end = end;
             this.elapsedTime = 0;
             this.interpolation = interpolation;
         }
@@ -300,15 +280,15 @@ public class MemoryMatchChallengeGameView extends GameView {
         @Override
         public boolean act(float delta) {
             elapsedTime += delta;
-            float progress = elapsedTime / duration;
-            float value = interpolation.apply(this.start, this.end, progress); // Apply interpolation curve here
-            TextureRegion keyFrame = animation.getKeyFrame(value);
-            img.setDrawable(new TextureRegionDrawable(keyFrame));
 
+            Gdx.app.log("d:" + duration, "e:" + elapsedTime);
             if (elapsedTime >= duration) {
-                return true; // Action completed
+                elapsedTime = duration;
             }
-            return false; // Action not completed yet
+
+            TextureRegion keyFrame = animation.getKeyFrame(elapsedTime);
+            img.setDrawable(new TextureRegionDrawable(keyFrame));
+            return elapsedTime >= duration; // Action not completed yet
         }
     }
 
