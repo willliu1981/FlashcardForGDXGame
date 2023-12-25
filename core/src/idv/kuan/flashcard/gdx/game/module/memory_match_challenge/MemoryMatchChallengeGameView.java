@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
@@ -17,12 +18,16 @@ import com.badlogic.gdx.scenes.scene2d.actions.DelayAction;
 import com.badlogic.gdx.scenes.scene2d.actions.RunnableAction;
 import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,17 +35,16 @@ import idv.kuan.flashcard.gdx.game.database.dao.WordDao;
 import idv.kuan.flashcard.gdx.game.database.entity.Word;
 import idv.kuan.flashcard.gdx.game.module.CardHandle;
 import idv.kuan.flashcard.gdx.game.module.GameView;
+import idv.kuan.flashcard.gdx.game.util.CardTextureUtil;
 import idv.kuan.flashcard.gdx.game.util.SoundAction;
+import idv.kuan.flashcard.gdx.game.util.StyleUtil;
 
 public class MemoryMatchChallengeGameView extends GameView {
-    final static int CARD_WIDTH = 100, CARD_HEIGHT = 100;
+    final static int CARD_WIDTH = 100, CARD_HEIGHT = 100, PADDING = 5;
     final float ANIM_DURATIONTIME = 0.75f;
 
     private List<DefCardHandle> cardHandles;
     private final int CARDCOUNT = 12;
-    private TextureRegion frontQuestionTexReg;
-    private TextureRegion frontAnswerTexReg;
-    private TextureRegion backCardTexReg;
     private TextureRegion blackCardTexReg;
     private Texture backCardAminsTexture;
 
@@ -189,13 +193,10 @@ public class MemoryMatchChallengeGameView extends GameView {
     @Override
     public void initialize() {
         //init texture --begin
-        frontQuestionTexReg = new TextureRegion(new Texture("test/q3.png"));
-        frontAnswerTexReg = new TextureRegion(new Texture("test/a3.png"));
-        backCardTexReg = new TextureRegion(new Texture("test/b1.png"));
         blackCardTexReg = new TextureRegion(new Texture("test/b0.png"));
         TextureRegion cardBackTexReg = new TextureRegion(new Texture("test/b1.png"));
-        TextureRegion questionTexReg = new TextureRegion(new Texture("test/q3.png"));
-        TextureRegion answerTexReg = new TextureRegion(new Texture("test/a3.png"));
+        TextureRegion questionTexReg = new TextureRegion(new Texture("test/q4.png"));
+        TextureRegion answerTexReg = new TextureRegion(new Texture("test/a4.png"));
 
         backCardAminsTexture = new Texture("test/bs3.png");
 
@@ -205,18 +206,86 @@ public class MemoryMatchChallengeGameView extends GameView {
 
         cardHandles = new ArrayList<>();
 
+        float scaleFactor = 15;
+
+        //style --begin
+        StyleUtil.DynamicCharacters dynamicCharacters = new StyleUtil.DynamicCharacters();
         WordDao dao = new WordDao();
+        List<Word> all = null;
         try {
-            List<Word> all = dao.findAll();
-            for (Word word : all.stream().distinct().limit(CARDCOUNT).collect(Collectors.toList())) {
-                Image image1 = new Image(blackCardTexReg);
-                DefCardHandle questionCardHandle = new DefCardHandle(image1,
-                        questionTexReg, cardBackTexReg,
+            all = dao.findAll();
+            all = all.stream().distinct().limit(CARDCOUNT).collect(Collectors.toList());
+            all.forEach(x -> dynamicCharacters.add(x.getTranslation()));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        Label.LabelStyle labelStyle = StyleUtil.generateDefaultLabelStyle(
+                StyleUtil.generateFontWithAddedChars(dynamicCharacters, 20));
+
+        //style --end
+
+        //create cardHandle ==begin
+        try {
+            for (Word word : all) {
+
+                //question --begin
+                CardTextureUtil.CardTextureCreator questionCardTextureCreator = CardTextureUtil.getCardTextureCreator(batch);
+                questionCardTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.ITextureCreator() {
+                    @Override
+                    public void createTexture(CardTextureUtil.TextureCreatorModel model) {
+                        Table table = new Table();
+                        table.setSize(CARD_WIDTH * 20 / scaleFactor, CARD_HEIGHT * 10 / scaleFactor);
+                        table.setBackground(new TextureRegionDrawable(questionTexReg));
+
+                        //書寫文字 --begin
+                        labelStyle.fontColor = Color.YELLOW;
+                        Label label = new Label(word.getTerm(), labelStyle);
+
+                        // 設定Label的一些屬性
+                        label.setAlignment(Align.center);
+                        label.setWrap(true);
+                        table.add(label).expand().fill();
+
+                        //書寫文字 --end
+
+
+                        model.setDrawTarget(table, (int) (CARD_WIDTH * 20 / scaleFactor), (int) (CARD_HEIGHT * 10 / scaleFactor));
+                    }
+                });
+                DefCardHandle questionCardHandle = new DefCardHandle(new Image(blackCardTexReg),
+                        questionCardTextureCreator.getTextureRegion(), cardBackTexReg,
                         "sounds/water004.wav", "sounds/water002.wav");
-                Image image2 = new Image(blackCardTexReg);
-                DefCardHandle answerCardHandle = new DefCardHandle(image2,
-                        answerTexReg, cardBackTexReg,
+                //question --end
+
+                //answer  ==begin
+                CardTextureUtil.CardTextureCreator answerCardTextureCreator = CardTextureUtil.getCardTextureCreator(batch);
+                answerCardTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.ITextureCreator() {
+                    @Override
+                    public void createTexture(CardTextureUtil.TextureCreatorModel model) {
+                        Table table = new Table();
+                        table.setSize(CARD_WIDTH * 20 / scaleFactor, CARD_HEIGHT * 10 / scaleFactor);
+                        table.setBackground(new TextureRegionDrawable(answerTexReg));
+
+                        //書寫文字 --begin
+                        labelStyle.fontColor = Color.RED;
+                        Label label = new Label(word.getTranslation(), labelStyle);
+
+                        // 設定Label的一些屬性
+                        label.setAlignment(Align.center);
+                        label.setWrap(true);
+                        table.add(label).expand().fill();
+
+                        //書寫文字 --end
+
+                        model.setDrawTarget(table, (int) (CARD_WIDTH * 20 / scaleFactor), (int) (CARD_HEIGHT * 10 / scaleFactor));
+                    }
+                });
+                DefCardHandle answerCardHandle = new DefCardHandle(new Image(blackCardTexReg),
+                        answerCardTextureCreator.getTextureRegion(), cardBackTexReg,
                         "sounds/water004.wav", "sounds/water002.wav");
+                //answer ==end
+
 
                 questionCardHandle.setWord(word);
                 answerCardHandle.setWord(word);
@@ -225,7 +294,10 @@ public class MemoryMatchChallengeGameView extends GameView {
 
             }
 
-        } catch (SQLException e) {
+            Collections.shuffle(cardHandles);
+            //create cardHandle ==end
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -262,7 +334,7 @@ public class MemoryMatchChallengeGameView extends GameView {
 
 
                 sequenceAction.addAction(runnableAction);
-                table.add(img).size(CARD_WIDTH, CARD_HEIGHT);
+                table.add(img).size(CARD_WIDTH, CARD_HEIGHT).pad(PADDING);
                 sequenceAction.addAction(new DelayAction(0.05f));
             }
             table.row();

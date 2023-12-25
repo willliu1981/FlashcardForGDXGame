@@ -11,7 +11,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 public abstract class GameView implements Screen {
     protected Stage stage;
     Viewport viewport;
-    SpriteBatch batch;
+    protected SpriteBatch batch;
 
     @Override
     public void show() {
