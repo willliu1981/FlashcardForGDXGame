@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
@@ -22,7 +21,6 @@ import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
@@ -40,10 +38,16 @@ import idv.kuan.flashcard.gdx.game.module.GameView;
 import idv.kuan.flashcard.gdx.game.util.CardTextureUtil;
 import idv.kuan.flashcard.gdx.game.util.SoundAction;
 import idv.kuan.flashcard.gdx.game.util.StyleUtil;
+import idv.kuan.libs.interfaces.observers.Observer;
+import idv.kuan.libs.interfaces.observers.Subject;
 
-public class MemoryMatchChallengeGameView extends GameView {
+public class MemoryMatchChallengeGameView extends GameView implements Subject<MemoryMatchChallengeGameView.DefCardHandle> {
+    final private static int CLICKLISTENER_ID_FOR_SOUNDACTION = 1;
+    final private static int CLICKLISTENER_ID_FOR_FLIPACTION = 2;
     final static int CARD_WIDTH = 100, CARD_HEIGHT = 100, PADDING = 5;
     final float ANIM_DURATIONTIME = 0.75f;
+
+    private List<Observer<MemoryMatchChallengeGameView.DefCardHandle>> observers;
 
     private List<DefCardHandle> cardHandles;
     private final int CARDCOUNT = 12;
@@ -54,29 +58,66 @@ public class MemoryMatchChallengeGameView extends GameView {
     static private DefCardHandle firstCard = null;
     static private DefCardHandle secondCard = null;
 
+    @Override
+    public void registerObserver(Observer<DefCardHandle> observer) {
+        observers.add(observer);
+        Gdx.app.log("MMCG", "add observer:" + ((DefCardHandle) observer).getWord().getTerm());
+        notifyObservers();
+    }
+
+    @Override
+    public void removeObserver(Observer<DefCardHandle> observer) {
+        observers.remove(observer);
+    }
+
+    @Override
+    public void notifyObservers() {
+        observers.forEach(x -> {
+            x.update((DefCardHandle) x);
+        });
+    }
+
+
+    private static class IdentifiedClickListener extends ClickListener {
+
+        int identifier;
+
+        public IdentifiedClickListener(int identifier) {
+            this.identifier = identifier;
+        }
+
+        public int getIdentifier() {
+            return identifier;
+        }
+    }
 
     //DefCardHandle --begin
-    private static class DefCardHandle extends CardHandle {
-        private Stage stage;
+    protected static class DefCardHandle extends CardHandle implements Observer<DefCardHandle> {
+        private MemoryMatchChallengeGameView view;
         private TextureRegion frontBackgroundTexReg;
         private TextureRegion backBackgroundTexReg;
         private Sound flipToFrontSound;
         private Sound flipToBackSound;
         private boolean isFrontState;
-        private boolean isFinishMatch;
+        private boolean isMatchFinish;
 
 
-        public DefCardHandle(Stage stage, Image background,
+        //selected card
+        static private DefCardHandle firstCard = null;
+        static private DefCardHandle secondCard = null;
+
+
+        public DefCardHandle(MemoryMatchChallengeGameView view, Image background,
                              TextureRegion frontBackgroundTexReg, TextureRegion backBackgroundTexReg,
                              String flipToFrontSoundFilePath, String flipToFBackSoundFilePath) {
             super(background);
-            this.stage = stage;
+            this.view = view;
             this.frontBackgroundTexReg = frontBackgroundTexReg;
             this.backBackgroundTexReg = backBackgroundTexReg;
             this.flipToFrontSound = Gdx.audio.newSound(Gdx.files.internal(flipToFrontSoundFilePath));
             this.flipToBackSound = Gdx.audio.newSound(Gdx.files.internal(flipToFBackSoundFilePath));
             this.isFrontState = false;
-            this.isFinishMatch = false;
+            this.isMatchFinish = false;
         }
 
         //DefCardHandle initialize --begin
@@ -86,7 +127,7 @@ public class MemoryMatchChallengeGameView extends GameView {
             this.background.setOrigin(CARD_WIDTH / 2, CARD_HEIGHT * 2 / 2);
 
             //sound listener --begin
-            this.background.addListener(new ClickListener() {
+            this.background.addListener(new IdentifiedClickListener(MemoryMatchChallengeGameView.CLICKLISTENER_ID_FOR_SOUNDACTION) {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     super.clicked(event, x, y);
@@ -100,8 +141,8 @@ public class MemoryMatchChallengeGameView extends GameView {
             });
             //sound --end
 
-            //image listener ==begin
-            this.background.addListener(new ClickListener() {
+            //flip listener ==begin
+            this.background.addListener(new IdentifiedClickListener(MemoryMatchChallengeGameView.CLICKLISTENER_ID_FOR_FLIPACTION) {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     super.clicked(event, x, y);
@@ -119,7 +160,7 @@ public class MemoryMatchChallengeGameView extends GameView {
                     final float originalX = DefCardHandle.this.getBackground().getX();
                     final float originalY = DefCardHandle.this.getBackground().getY();
 
-                    onCardSelected(stage, DefCardHandle.this);
+                    view.registerObserver(DefCardHandle.this);
 
                     DefCardHandle.this.background.addAction(
 
@@ -164,7 +205,7 @@ public class MemoryMatchChallengeGameView extends GameView {
                                             , Actions.scaleTo(1, 1, DefCardHandle.this.isFrontState ? DT_TOBACK : DT_TOFRONT
                                                     , (DefCardHandle.this.isFrontState ? Interpolation.bounceOut : Interpolation.circleOut))
                                     )));
-                    //image listener ==end
+                    //flip listener ==end
 
                 }
             });
@@ -173,8 +214,9 @@ public class MemoryMatchChallengeGameView extends GameView {
         }
         //DefCardHandle initialize --end
 
+
         private void finishMatch() {
-            this.isFinishMatch = true;
+            this.isMatchFinish = true;
         }
 
 
@@ -207,6 +249,12 @@ public class MemoryMatchChallengeGameView extends GameView {
         public Image getBackground() {
             return background;
         }
+
+
+        @Override
+        public void update(DefCardHandle data) {
+            Gdx.app.log("MMCG", "observer:" + this.word.getTerm());
+        }
     }
     //DefCardHandle --end
 
@@ -224,7 +272,7 @@ public class MemoryMatchChallengeGameView extends GameView {
 
         //init texture --end
 
-
+        observers = new ArrayList<>();
         cardHandles = new ArrayList<>();
 
         float scaleFactor = 15;
@@ -274,7 +322,7 @@ public class MemoryMatchChallengeGameView extends GameView {
                         model.setDrawTarget(table, (int) (CARD_WIDTH * 20 / scaleFactor), (int) (CARD_HEIGHT * 10 / scaleFactor));
                     }
                 });
-                DefCardHandle questionCardHandle = new DefCardHandle(stage, new Image(blackCardTexReg),
+                DefCardHandle questionCardHandle = new DefCardHandle(this, new Image(blackCardTexReg),
                         questionCardTextureCreator.getTextureRegion(), cardBackTexReg,
                         "sounds/water004.wav", "sounds/water002.wav");
                 //question --end
@@ -302,7 +350,7 @@ public class MemoryMatchChallengeGameView extends GameView {
                         model.setDrawTarget(table, (int) (CARD_WIDTH * 20 / scaleFactor), (int) (CARD_HEIGHT * 10 / scaleFactor));
                     }
                 });
-                DefCardHandle answerCardHandle = new DefCardHandle(stage, new Image(blackCardTexReg),
+                DefCardHandle answerCardHandle = new DefCardHandle(this, new Image(blackCardTexReg),
                         answerCardTextureCreator.getTextureRegion(), cardBackTexReg,
                         "sounds/water004.wav", "sounds/water002.wav");
                 //answer ==end
@@ -390,8 +438,8 @@ public class MemoryMatchChallengeGameView extends GameView {
         img.addAction(aminAction);
     }
 
-    //card selected --begin
-    public static void onCardSelected(Stage stage, DefCardHandle card) {
+    //card selected ==begin
+    public void onCardSelected(Stage stage, DefCardHandle card) {
         if (firstCard == null) {
             firstCard = card;
             // 翻開卡片
@@ -402,7 +450,7 @@ public class MemoryMatchChallengeGameView extends GameView {
         }
     }
 
-    private static void checkForMatch(Stage stage) {
+    private void checkForMatch(Stage stage) {
         final float DELAY_TIME = 3.0f;
         if (firstCard.getWord().getId() == secondCard.getWord().getId()) {
             // 配對成功
@@ -410,7 +458,7 @@ public class MemoryMatchChallengeGameView extends GameView {
             secondCard = null;
         } else {
             // 延遲一段時間後翻回卡片
-            delay(stage, () -> {
+            delayAndAct(stage, () -> {
                 triggerClick(firstCard.isFrontState, firstCard.getBackground());
                 triggerClick(secondCard.isFrontState, secondCard.getBackground());
                 firstCard = null;
@@ -420,25 +468,27 @@ public class MemoryMatchChallengeGameView extends GameView {
     }
 
     // 這是一個延遲執行動作的方法
-    private static void delay(Stage stage, Runnable action, float delayTime) {
+    private void delayAndAct(Stage stage, Runnable action, float delayTime) {
         SequenceAction sequence = Actions.sequence(Actions.delay(delayTime), Actions.run(action));
         stage.addAction(sequence);
     }
 
+    //card selected ==end
 
-    //card selected --end
 
-    private static void triggerClick(boolean isFrontState, Actor actor) {
+    private void triggerClick(boolean isFrontState, Actor actor) {
         if (isFrontState) {
             // 遍歷actor的所有事件監聽器
             for (EventListener listener : actor.getListeners()) {
                 // 檢查是否為ClickListener
-                if (listener instanceof ClickListener) {
+                if (listener instanceof IdentifiedClickListener) {
                     // 強制轉換為ClickListener
-                    ClickListener clickListener = (ClickListener) listener;
-                    // 觸發點擊事件，這裡的參數可以根據需要調整
-                    clickListener.clicked(null, actor.getX(), actor.getY());
-                   // break; // 如果只需要觸發一個點擊事件，則跳出循環
+                    IdentifiedClickListener clickListener = (IdentifiedClickListener) listener;
+                    if (clickListener.getIdentifier() == MemoryMatchChallengeGameView.CLICKLISTENER_ID_FOR_SOUNDACTION
+                            || clickListener.getIdentifier() == MemoryMatchChallengeGameView.CLICKLISTENER_ID_FOR_FLIPACTION) {
+                        // 觸發點擊事件，這裡的參數可以根據需要調整
+                        clickListener.clicked(null, actor.getX(), actor.getY());
+                    }
                 }
             }
         }
