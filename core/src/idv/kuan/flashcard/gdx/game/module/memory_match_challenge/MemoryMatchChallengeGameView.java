@@ -12,7 +12,9 @@ import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.actions.DelayAction;
 import com.badlogic.gdx.scenes.scene2d.actions.RunnableAction;
@@ -48,28 +50,36 @@ public class MemoryMatchChallengeGameView extends GameView {
     private TextureRegion blackCardTexReg;
     private Texture backCardAminsTexture;
 
+    //selected card
+    static private DefCardHandle firstCard = null;
+    static private DefCardHandle secondCard = null;
+
 
     //DefCardHandle --begin
     private static class DefCardHandle extends CardHandle {
-
+        private Stage stage;
         private TextureRegion frontBackgroundTexReg;
         private TextureRegion backBackgroundTexReg;
         private Sound flipToFrontSound;
         private Sound flipToBackSound;
         private boolean isFrontState;
+        private boolean isFinishMatch;
 
 
-        public DefCardHandle(Image background,
+        public DefCardHandle(Stage stage, Image background,
                              TextureRegion frontBackgroundTexReg, TextureRegion backBackgroundTexReg,
                              String flipToFrontSoundFilePath, String flipToFBackSoundFilePath) {
             super(background);
+            this.stage = stage;
             this.frontBackgroundTexReg = frontBackgroundTexReg;
             this.backBackgroundTexReg = backBackgroundTexReg;
             this.flipToFrontSound = Gdx.audio.newSound(Gdx.files.internal(flipToFrontSoundFilePath));
             this.flipToBackSound = Gdx.audio.newSound(Gdx.files.internal(flipToFBackSoundFilePath));
             this.isFrontState = false;
+            this.isFinishMatch = false;
         }
 
+        //DefCardHandle initialize --begin
         @Override
         protected void initialize() {
             // 设置卡片的原点为中心
@@ -109,9 +119,9 @@ public class MemoryMatchChallengeGameView extends GameView {
                     final float originalX = DefCardHandle.this.getBackground().getX();
                     final float originalY = DefCardHandle.this.getBackground().getY();
 
+                    onCardSelected(stage, DefCardHandle.this);
 
                     DefCardHandle.this.background.addAction(
-
 
                             Actions.parallel(
                                     //move
@@ -161,6 +171,12 @@ public class MemoryMatchChallengeGameView extends GameView {
 
 
         }
+        //DefCardHandle initialize --end
+
+        private void finishMatch() {
+            this.isFinishMatch = true;
+        }
+
 
         private TextureRegion getCurrentTextureRegion() {
             return this.isFrontState ? this.frontBackgroundTexReg : this.backBackgroundTexReg;
@@ -194,6 +210,7 @@ public class MemoryMatchChallengeGameView extends GameView {
     }
     //DefCardHandle --end
 
+    //MemoryMatchChallengeGameView initialize --begin
     @Override
     public void initialize() {
         //init texture --begin
@@ -257,7 +274,7 @@ public class MemoryMatchChallengeGameView extends GameView {
                         model.setDrawTarget(table, (int) (CARD_WIDTH * 20 / scaleFactor), (int) (CARD_HEIGHT * 10 / scaleFactor));
                     }
                 });
-                DefCardHandle questionCardHandle = new DefCardHandle(new Image(blackCardTexReg),
+                DefCardHandle questionCardHandle = new DefCardHandle(stage, new Image(blackCardTexReg),
                         questionCardTextureCreator.getTextureRegion(), cardBackTexReg,
                         "sounds/water004.wav", "sounds/water002.wav");
                 //question --end
@@ -285,7 +302,7 @@ public class MemoryMatchChallengeGameView extends GameView {
                         model.setDrawTarget(table, (int) (CARD_WIDTH * 20 / scaleFactor), (int) (CARD_HEIGHT * 10 / scaleFactor));
                     }
                 });
-                DefCardHandle answerCardHandle = new DefCardHandle(new Image(blackCardTexReg),
+                DefCardHandle answerCardHandle = new DefCardHandle(stage, new Image(blackCardTexReg),
                         answerCardTextureCreator.getTextureRegion(), cardBackTexReg,
                         "sounds/water004.wav", "sounds/water002.wav");
                 //answer ==end
@@ -308,10 +325,9 @@ public class MemoryMatchChallengeGameView extends GameView {
         createCard();
 
     }
-
+    //MemoryMatchChallengeGameView initialize --end
 
     private void createCard() {
-
 
         Table table = new Table();
         table.setFillParent(true);
@@ -355,7 +371,7 @@ public class MemoryMatchChallengeGameView extends GameView {
         float FRAME_DURATION = duration / FRAME_COUNT;
 
 
-// 创建一个TextureRegion数组，其中包含所有动画帧
+        // 创建一个TextureRegion数组，其中包含所有动画帧
         TextureRegion[] aminFrames = new TextureRegion[FRAME_COUNT];
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 4; j++) {
@@ -364,7 +380,7 @@ public class MemoryMatchChallengeGameView extends GameView {
             }
         }
 
-// 使用这些帧创建一个Animation对象
+        // 使用这些帧创建一个Animation对象
         return new Animation<>(FRAME_DURATION, aminFrames);
     }
 
@@ -374,77 +390,61 @@ public class MemoryMatchChallengeGameView extends GameView {
         img.addAction(aminAction);
     }
 
-    private void cardFlipActions(Image img, boolean ifFlipedToFront) {
-        float DT_TOBACK = 0.22f;
-        float DT_TOFRONT = 0.33f;
-
-        float minMoveDst = -5;
-        float maxMoveDst = 5;
-
-        float minRotateDst = -1f;
-        float maxRotateDst = 1f;
-
-        final float originalX = img.getX();
-        final float originalY = img.getY();
-
-
-        img.setOrigin(CARD_WIDTH / 2, CARD_HEIGHT / 2);
-
-        img.addAction(
-
-                Actions.parallel(
-                        //move
-                        Actions.sequence(
-                                Actions.moveBy(MathUtils.random(minMoveDst / 20, maxMoveDst / 20)
-                                        , MathUtils.random(minMoveDst / 20, maxMoveDst / 20)
-                                        , (ifFlipedToFront ? DT_TOBACK : DT_TOFRONT)
-                                        , Interpolation.smooth)
-                                , Actions.moveBy(MathUtils.random(minMoveDst, maxMoveDst), MathUtils.random(minMoveDst, maxMoveDst)
-                                        , (ifFlipedToFront ? DT_TOBACK : DT_TOFRONT) - Math.min(DT_TOBACK, DT_TOFRONT) / 2
-                                        , Interpolation.bounceIn)
-                                , Actions.moveTo(originalX, originalY, Math.min(DT_TOBACK, DT_TOFRONT) / 2, Interpolation.bounceOut))
-
-                        //rotate
-                        , Actions.sequence(Actions.rotateBy(MathUtils.random(minRotateDst / 20, maxRotateDst / 20)
-                                        , (ifFlipedToFront ? DT_TOBACK : DT_TOFRONT)
-                                        , Interpolation.smooth)
-                                , Actions.rotateBy(MathUtils.random(minRotateDst, maxRotateDst)
-                                        , (ifFlipedToFront ? DT_TOBACK : DT_TOFRONT) - Math.min(DT_TOBACK, DT_TOFRONT) / 2
-                                        , Interpolation.bounceIn)
-                                , Actions.rotateTo(0, Math.min(DT_TOBACK, DT_TOFRONT) / 2, Interpolation.bounceOut))
-
-                        //alpha
-                        , Actions.sequence(Actions.alpha(0.0f, ifFlipedToFront ? DT_TOBACK : DT_TOFRONT)
-                                , Actions.alpha(1f, ifFlipedToFront ? DT_TOBACK / 2 : DT_TOFRONT / 2))
-
-                        //scale
-                        , Actions.sequence(
-                                Actions.scaleTo(0, 1, ifFlipedToFront ? DT_TOBACK : DT_TOFRONT
-                                        , Interpolation.circleOut), // 縮放動畫，持續0.5秒
-                                Actions.run(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        /*
-                                        if (ifFlipedToFront) {
-                                            card.flipToFront(false);
-
-                                        } else {
-                                            card.flipToFront(true);
-
-                                        }
-
-                                        img.setDrawable(new TextureRegionDrawable(card.getCurrentTextureRegion()));
-
-
-                                         */
-                                    }
-                                })
-                                , Actions.scaleTo(1, 1, ifFlipedToFront ? DT_TOBACK : DT_TOFRONT
-                                        , (ifFlipedToFront ? Interpolation.bounceOut : Interpolation.circleOut))
-                        )));
-
+    //card selected --begin
+    public static void onCardSelected(Stage stage, DefCardHandle card) {
+        if (firstCard == null) {
+            firstCard = card;
+            // 翻開卡片
+        } else if (secondCard == null && card != firstCard) {
+            secondCard = card;
+            // 翻開第二張卡片並檢查配對
+            checkForMatch(stage);
+        }
     }
 
+    private static void checkForMatch(Stage stage) {
+        final float DELAY_TIME = 3.0f;
+        if (firstCard.getWord().getId() == secondCard.getWord().getId()) {
+            // 配對成功
+            firstCard = null;
+            secondCard = null;
+        } else {
+            // 延遲一段時間後翻回卡片
+            delay(stage, () -> {
+                triggerClick(firstCard.isFrontState, firstCard.getBackground());
+                triggerClick(secondCard.isFrontState, secondCard.getBackground());
+                firstCard = null;
+                secondCard = null;
+            }, DELAY_TIME);
+        }
+    }
+
+    // 這是一個延遲執行動作的方法
+    private static void delay(Stage stage, Runnable action, float delayTime) {
+        SequenceAction sequence = Actions.sequence(Actions.delay(delayTime), Actions.run(action));
+        stage.addAction(sequence);
+    }
+
+
+    //card selected --end
+
+    private static void triggerClick(boolean isFrontState, Actor actor) {
+        if (isFrontState) {
+            // 遍歷actor的所有事件監聽器
+            for (EventListener listener : actor.getListeners()) {
+                // 檢查是否為ClickListener
+                if (listener instanceof ClickListener) {
+                    // 強制轉換為ClickListener
+                    ClickListener clickListener = (ClickListener) listener;
+                    // 觸發點擊事件，這裡的參數可以根據需要調整
+                    clickListener.clicked(null, actor.getX(), actor.getY());
+                   // break; // 如果只需要觸發一個點擊事件，則跳出循環
+                }
+            }
+        }
+
+
+    }
 
     private void soundAction(Image img, Sound sound, float soundDuration, float pitchStart, float pitchEnd, Interpolation interpolation) {
         // 加載音效
