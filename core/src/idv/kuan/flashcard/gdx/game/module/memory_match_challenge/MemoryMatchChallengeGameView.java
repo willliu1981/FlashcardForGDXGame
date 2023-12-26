@@ -49,6 +49,7 @@ public class MemoryMatchChallengeGameView extends GameView {
     private Texture backCardAminsTexture;
 
 
+    //DefCardHandle --begin
     private static class DefCardHandle extends CardHandle {
 
         private TextureRegion frontBackgroundTexReg;
@@ -171,12 +172,14 @@ public class MemoryMatchChallengeGameView extends GameView {
 
         private SoundAction playFlipToFrontWithSoundAction() {
             SoundAction soundAction = new SoundAction(flipToFrontSound);
+            soundAction.setVolume(0.33f);
             background.addAction(soundAction);
             return soundAction;
         }
 
         private SoundAction playFlipToBackWithSoundAction() {
             SoundAction soundAction = new SoundAction(flipToBackSound);
+            soundAction.setVolume(0.33f);
             background.addAction(soundAction);
             return soundAction;
         }
@@ -189,6 +192,7 @@ public class MemoryMatchChallengeGameView extends GameView {
             return background;
         }
     }
+    //DefCardHandle --end
 
     @Override
     public void initialize() {
@@ -452,6 +456,7 @@ public class MemoryMatchChallengeGameView extends GameView {
 
         // 创建并添加Action到某个Actor，这样它就会执行
         SoundAction soundAction = new SoundAction(sound, soundId, soundDuration, pitchStart, pitchEnd, interpolation);
+        soundAction.setVolume(0.33f);
         img.addAction(soundAction);
 
     }
