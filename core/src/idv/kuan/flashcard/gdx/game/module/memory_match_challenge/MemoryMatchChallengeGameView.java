@@ -87,6 +87,260 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Ac
     }
     //observers --end
 
+    //card selected ==begin
+    public void onCardSelected(Stage stage, DefCardHandle card) {
+        if (firstCard == null) {
+            firstCard = card;
+            // 翻開卡片
+        } else if (secondCard == null && card != firstCard) {
+            secondCard = card;
+            // 翻開第二張卡片並檢查配對
+            checkForMatch(stage);
+        }
+    }
+
+    private void checkForMatch(Stage stage) {
+        final float DELAY_TIME = 3.0f;
+        if (firstCard.getWord().getId() == secondCard.getWord().getId()) {
+            // 配對成功
+            firstCard = null;
+            secondCard = null;
+        } else {
+            // 延遲一段時間後翻回卡片
+            delayAndAct(stage, () -> {
+                triggerClick(firstCard.isFrontState, firstCard.getBackground());
+                triggerClick(secondCard.isFrontState, secondCard.getBackground());
+                firstCard = null;
+                secondCard = null;
+            }, DELAY_TIME);
+        }
+    }
+
+    // 這是一個延遲執行動作的方法
+    private void delayAndAct(Stage stage, Runnable action, float delayTime) {
+        SequenceAction sequence = Actions.sequence(Actions.delay(delayTime), Actions.run(action));
+        stage.addAction(sequence);
+    }
+
+    //card selected ==end
+
+    private void triggerClick(boolean isFrontState, Actor actor) {
+        if (isFrontState) {
+            // 遍歷actor的所有事件監聽器
+            for (EventListener listener : actor.getListeners()) {
+                // 檢查是否為ClickListener
+                if (listener instanceof IdentifiedClickListener) {
+                    // 強制轉換為ClickListener
+                    IdentifiedClickListener clickListener = (IdentifiedClickListener) listener;
+                    if (clickListener.getIdentifier() == MemoryMatchChallengeGameView.CLICKLISTENER_ID_FOR_SOUNDACTION
+                            || clickListener.getIdentifier() == MemoryMatchChallengeGameView.CLICKLISTENER_ID_FOR_FLIPACTION) {
+                        // 觸發點擊事件，這裡的參數可以根據需要調整
+                        clickListener.clicked(null, actor.getX(), actor.getY());
+                    }
+                }
+            }
+        }
+
+
+    }
+
+
+    //MemoryMatchChallengeGameView initialize --begin
+    @Override
+    public void initialize() {
+        //init texture --begin
+        blackCardTexReg = new TextureRegion(new Texture("test/b0.png"));
+        TextureRegion cardBackTexReg = new TextureRegion(new Texture("test/b1.png"));
+        TextureRegion questionTexReg = new TextureRegion(new Texture("test/q4.png"));
+        TextureRegion answerTexReg = new TextureRegion(new Texture("test/a4.png"));
+
+        backCardAminsTexture = new Texture("test/bs3.png");
+
+
+        //init texture --end
+
+        actionObservers = new ArrayList<>();
+        cardHandles = new ArrayList<>();
+
+        float scaleFactor = 15;
+
+        //style --begin
+        StyleUtil.DynamicCharacters dynamicCharacters = new StyleUtil.DynamicCharacters();
+        WordDao dao = new WordDao();
+        List<Word> all = null;
+        try {
+            all = dao.findAll();
+            all = all.stream().distinct().limit(CARDCOUNT).collect(Collectors.toList());
+            all.forEach(x -> dynamicCharacters.add(x.getTranslation()));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        Label.LabelStyle labelStyle = StyleUtil.generateDefaultLabelStyle(
+                StyleUtil.generateFontWithAddedChars(dynamicCharacters, 20));
+
+        //style --end
+
+        //create cardHandle ==begin
+        try {
+            for (Word word : all) {
+
+                //question --begin
+                CardTextureUtil.CardTextureCreator questionCardTextureCreator = CardTextureUtil.getCardTextureCreator(batch);
+                questionCardTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.ITextureCreator() {
+                    @Override
+                    public void createTexture(CardTextureUtil.TextureCreatorModel model) {
+                        Table table = new Table();
+                        table.setSize(CARD_WIDTH * 20 / scaleFactor, CARD_HEIGHT * 10 / scaleFactor);
+                        table.setBackground(new TextureRegionDrawable(questionTexReg));
+
+                        //書寫文字 --begin
+                        labelStyle.fontColor = Color.YELLOW;
+                        Label label = new Label(word.getTerm(), labelStyle);
+
+                        // 設定Label的一些屬性
+                        label.setAlignment(Align.center);
+                        label.setWrap(true);
+                        table.add(label).expand().fill();
+
+                        //書寫文字 --end
+
+
+                        model.setDrawTarget(table, (int) (CARD_WIDTH * 20 / scaleFactor), (int) (CARD_HEIGHT * 10 / scaleFactor));
+                    }
+                });
+                DefCardHandle questionCardHandle = new DefCardHandle(this, new Image(blackCardTexReg),
+                        questionCardTextureCreator.getTextureRegion(), cardBackTexReg,
+                        "sounds/water004.wav", "sounds/water002.wav");
+                //question --end
+
+                //answer  ==begin
+                CardTextureUtil.CardTextureCreator answerCardTextureCreator = CardTextureUtil.getCardTextureCreator(batch);
+                answerCardTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.ITextureCreator() {
+                    @Override
+                    public void createTexture(CardTextureUtil.TextureCreatorModel model) {
+                        Table table = new Table();
+                        table.setSize(CARD_WIDTH * 20 / scaleFactor, CARD_HEIGHT * 10 / scaleFactor);
+                        table.setBackground(new TextureRegionDrawable(answerTexReg));
+
+                        //書寫文字 --begin
+                        labelStyle.fontColor = Color.RED;
+                        Label label = new Label(word.getTranslation(), labelStyle);
+
+                        // 設定Label的一些屬性
+                        label.setAlignment(Align.center);
+                        label.setWrap(true);
+                        table.add(label).expand().fill();
+
+                        //書寫文字 --end
+
+                        model.setDrawTarget(table, (int) (CARD_WIDTH * 20 / scaleFactor), (int) (CARD_HEIGHT * 10 / scaleFactor));
+                    }
+                });
+                DefCardHandle answerCardHandle = new DefCardHandle(this, new Image(blackCardTexReg),
+                        answerCardTextureCreator.getTextureRegion(), cardBackTexReg,
+                        "sounds/water004.wav", "sounds/water002.wav");
+                //answer ==end
+
+
+                questionCardHandle.setWord(word);
+                answerCardHandle.setWord(word);
+                cardHandles.add(questionCardHandle);
+                cardHandles.add(answerCardHandle);
+
+            }
+
+            Collections.shuffle(cardHandles);
+            //create cardHandle ==end
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        createCard();
+
+    }
+    //MemoryMatchChallengeGameView initialize --end
+
+    private void createCard() {
+
+        Table table = new Table();
+        table.setFillParent(true);
+
+        SequenceAction sequenceAction = new SequenceAction();
+        Animation<TextureRegion> animation = buildCardCreateAmintions(backCardAminsTexture, ANIM_DURATIONTIME);
+
+
+        for (int idx = 0, row = 0; row < 4; row++) {
+            for (int col = 0; col < 6; col++, idx++) {
+                DefCardHandle cardHandle = cardHandles.get(idx);
+                Image img = cardHandle.getBackground();
+
+                RunnableAction runnableAction = new RunnableAction();
+                runnableAction.setRunnable(new Runnable() {
+                    @Override
+                    public void run() {
+                        Sound sound = Gdx.audio.newSound(Gdx.files.internal("sounds/water001.wav"));
+                        cardCreatedActions(img, animation);
+                        soundAction(img, sound, 1.0f, 1.5f, 1.0f, Interpolation.smooth);
+
+                    }
+                });
+
+
+                sequenceAction.addAction(runnableAction);
+                table.add(img).size(CARD_WIDTH, CARD_HEIGHT).pad(PADDING);
+                sequenceAction.addAction(new DelayAction(0.05f));
+            }
+            table.row();
+        }
+
+        stage.addAction(sequenceAction);
+        stage.addActor(table);
+    }
+
+    private Animation<TextureRegion> buildCardCreateAmintions(Texture texture, float duration) {
+        int FRAME_COUNT = 8;
+        int FRAME_WIDTH = 80;
+        int FRAME_HEIGHT = 80;
+        float FRAME_DURATION = duration / FRAME_COUNT;
+
+
+        // 创建一个TextureRegion数组，其中包含所有动画帧
+        TextureRegion[] aminFrames = new TextureRegion[FRAME_COUNT];
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 4; j++) {
+                aminFrames[i * 4 + j] = new TextureRegion(texture
+                        , j * FRAME_WIDTH, i * FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT);
+            }
+        }
+
+        // 使用这些帧创建一个Animation对象
+        return new Animation<>(FRAME_DURATION, aminFrames);
+    }
+
+    private void cardCreatedActions(Image img, Animation<TextureRegion> animation) {
+
+        AminAction aminAction = new AminAction(img, animation, ANIM_DURATIONTIME, Interpolation.fade);
+        img.addAction(aminAction);
+    }
+
+
+    private void soundAction(Image img, Sound sound, float soundDuration, float pitchStart, float pitchEnd, Interpolation interpolation) {
+        // 加載音效
+
+
+        long soundId = sound.play(); // 需要保存这个ID来稍后控制音效
+
+        // 创建一个曲线插值，例如线性或加速插值
+
+        // 创建并添加Action到某个Actor，这样它就会执行
+        SoundAction soundAction = new SoundAction(sound, soundId, soundDuration, pitchStart, pitchEnd, interpolation);
+        soundAction.setVolume(0.33f);
+        img.addAction(soundAction);
+
+    }
+
     private static class IdentifiedClickListener extends ClickListener {
 
         int identifier;
@@ -272,259 +526,6 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Ac
         }
     }
     //DefCardHandle --end
-
-    //MemoryMatchChallengeGameView initialize --begin
-    @Override
-    public void initialize() {
-        //init texture --begin
-        blackCardTexReg = new TextureRegion(new Texture("test/b0.png"));
-        TextureRegion cardBackTexReg = new TextureRegion(new Texture("test/b1.png"));
-        TextureRegion questionTexReg = new TextureRegion(new Texture("test/q4.png"));
-        TextureRegion answerTexReg = new TextureRegion(new Texture("test/a4.png"));
-
-        backCardAminsTexture = new Texture("test/bs3.png");
-
-
-        //init texture --end
-
-        actionObservers = new ArrayList<>();
-        cardHandles = new ArrayList<>();
-
-        float scaleFactor = 15;
-
-        //style --begin
-        StyleUtil.DynamicCharacters dynamicCharacters = new StyleUtil.DynamicCharacters();
-        WordDao dao = new WordDao();
-        List<Word> all = null;
-        try {
-            all = dao.findAll();
-            all = all.stream().distinct().limit(CARDCOUNT).collect(Collectors.toList());
-            all.forEach(x -> dynamicCharacters.add(x.getTranslation()));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        Label.LabelStyle labelStyle = StyleUtil.generateDefaultLabelStyle(
-                StyleUtil.generateFontWithAddedChars(dynamicCharacters, 20));
-
-        //style --end
-
-        //create cardHandle ==begin
-        try {
-            for (Word word : all) {
-
-                //question --begin
-                CardTextureUtil.CardTextureCreator questionCardTextureCreator = CardTextureUtil.getCardTextureCreator(batch);
-                questionCardTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.ITextureCreator() {
-                    @Override
-                    public void createTexture(CardTextureUtil.TextureCreatorModel model) {
-                        Table table = new Table();
-                        table.setSize(CARD_WIDTH * 20 / scaleFactor, CARD_HEIGHT * 10 / scaleFactor);
-                        table.setBackground(new TextureRegionDrawable(questionTexReg));
-
-                        //書寫文字 --begin
-                        labelStyle.fontColor = Color.YELLOW;
-                        Label label = new Label(word.getTerm(), labelStyle);
-
-                        // 設定Label的一些屬性
-                        label.setAlignment(Align.center);
-                        label.setWrap(true);
-                        table.add(label).expand().fill();
-
-                        //書寫文字 --end
-
-
-                        model.setDrawTarget(table, (int) (CARD_WIDTH * 20 / scaleFactor), (int) (CARD_HEIGHT * 10 / scaleFactor));
-                    }
-                });
-                DefCardHandle questionCardHandle = new DefCardHandle(this, new Image(blackCardTexReg),
-                        questionCardTextureCreator.getTextureRegion(), cardBackTexReg,
-                        "sounds/water004.wav", "sounds/water002.wav");
-                //question --end
-
-                //answer  ==begin
-                CardTextureUtil.CardTextureCreator answerCardTextureCreator = CardTextureUtil.getCardTextureCreator(batch);
-                answerCardTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.ITextureCreator() {
-                    @Override
-                    public void createTexture(CardTextureUtil.TextureCreatorModel model) {
-                        Table table = new Table();
-                        table.setSize(CARD_WIDTH * 20 / scaleFactor, CARD_HEIGHT * 10 / scaleFactor);
-                        table.setBackground(new TextureRegionDrawable(answerTexReg));
-
-                        //書寫文字 --begin
-                        labelStyle.fontColor = Color.RED;
-                        Label label = new Label(word.getTranslation(), labelStyle);
-
-                        // 設定Label的一些屬性
-                        label.setAlignment(Align.center);
-                        label.setWrap(true);
-                        table.add(label).expand().fill();
-
-                        //書寫文字 --end
-
-                        model.setDrawTarget(table, (int) (CARD_WIDTH * 20 / scaleFactor), (int) (CARD_HEIGHT * 10 / scaleFactor));
-                    }
-                });
-                DefCardHandle answerCardHandle = new DefCardHandle(this, new Image(blackCardTexReg),
-                        answerCardTextureCreator.getTextureRegion(), cardBackTexReg,
-                        "sounds/water004.wav", "sounds/water002.wav");
-                //answer ==end
-
-
-                questionCardHandle.setWord(word);
-                answerCardHandle.setWord(word);
-                cardHandles.add(questionCardHandle);
-                cardHandles.add(answerCardHandle);
-
-            }
-
-            Collections.shuffle(cardHandles);
-            //create cardHandle ==end
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        createCard();
-
-    }
-    //MemoryMatchChallengeGameView initialize --end
-
-    private void createCard() {
-
-        Table table = new Table();
-        table.setFillParent(true);
-
-        SequenceAction sequenceAction = new SequenceAction();
-        Animation<TextureRegion> animation = buildCardCreateAmintions(backCardAminsTexture, ANIM_DURATIONTIME);
-
-
-        for (int idx = 0, row = 0; row < 4; row++) {
-            for (int col = 0; col < 6; col++, idx++) {
-                DefCardHandle cardHandle = cardHandles.get(idx);
-                Image img = cardHandle.getBackground();
-
-                RunnableAction runnableAction = new RunnableAction();
-                runnableAction.setRunnable(new Runnable() {
-                    @Override
-                    public void run() {
-                        Sound sound = Gdx.audio.newSound(Gdx.files.internal("sounds/water001.wav"));
-                        cardCreatedActions(img, animation);
-                        soundAction(img, sound, 1.0f, 1.5f, 1.0f, Interpolation.smooth);
-
-                    }
-                });
-
-
-                sequenceAction.addAction(runnableAction);
-                table.add(img).size(CARD_WIDTH, CARD_HEIGHT).pad(PADDING);
-                sequenceAction.addAction(new DelayAction(0.05f));
-            }
-            table.row();
-        }
-
-        stage.addAction(sequenceAction);
-        stage.addActor(table);
-    }
-
-    private Animation<TextureRegion> buildCardCreateAmintions(Texture texture, float duration) {
-        int FRAME_COUNT = 8;
-        int FRAME_WIDTH = 80;
-        int FRAME_HEIGHT = 80;
-        float FRAME_DURATION = duration / FRAME_COUNT;
-
-
-        // 创建一个TextureRegion数组，其中包含所有动画帧
-        TextureRegion[] aminFrames = new TextureRegion[FRAME_COUNT];
-        for (int i = 0; i < 2; i++) {
-            for (int j = 0; j < 4; j++) {
-                aminFrames[i * 4 + j] = new TextureRegion(texture
-                        , j * FRAME_WIDTH, i * FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT);
-            }
-        }
-
-        // 使用这些帧创建一个Animation对象
-        return new Animation<>(FRAME_DURATION, aminFrames);
-    }
-
-    private void cardCreatedActions(Image img, Animation<TextureRegion> animation) {
-
-        AminAction aminAction = new AminAction(img, animation, ANIM_DURATIONTIME, Interpolation.fade);
-        img.addAction(aminAction);
-    }
-
-    //card selected ==begin
-    public void onCardSelected(Stage stage, DefCardHandle card) {
-        if (firstCard == null) {
-            firstCard = card;
-            // 翻開卡片
-        } else if (secondCard == null && card != firstCard) {
-            secondCard = card;
-            // 翻開第二張卡片並檢查配對
-            checkForMatch(stage);
-        }
-    }
-
-    private void checkForMatch(Stage stage) {
-        final float DELAY_TIME = 3.0f;
-        if (firstCard.getWord().getId() == secondCard.getWord().getId()) {
-            // 配對成功
-            firstCard = null;
-            secondCard = null;
-        } else {
-            // 延遲一段時間後翻回卡片
-            delayAndAct(stage, () -> {
-                triggerClick(firstCard.isFrontState, firstCard.getBackground());
-                triggerClick(secondCard.isFrontState, secondCard.getBackground());
-                firstCard = null;
-                secondCard = null;
-            }, DELAY_TIME);
-        }
-    }
-
-    // 這是一個延遲執行動作的方法
-    private void delayAndAct(Stage stage, Runnable action, float delayTime) {
-        SequenceAction sequence = Actions.sequence(Actions.delay(delayTime), Actions.run(action));
-        stage.addAction(sequence);
-    }
-
-    //card selected ==end
-
-
-    private void triggerClick(boolean isFrontState, Actor actor) {
-        if (isFrontState) {
-            // 遍歷actor的所有事件監聽器
-            for (EventListener listener : actor.getListeners()) {
-                // 檢查是否為ClickListener
-                if (listener instanceof IdentifiedClickListener) {
-                    // 強制轉換為ClickListener
-                    IdentifiedClickListener clickListener = (IdentifiedClickListener) listener;
-                    if (clickListener.getIdentifier() == MemoryMatchChallengeGameView.CLICKLISTENER_ID_FOR_SOUNDACTION
-                            || clickListener.getIdentifier() == MemoryMatchChallengeGameView.CLICKLISTENER_ID_FOR_FLIPACTION) {
-                        // 觸發點擊事件，這裡的參數可以根據需要調整
-                        clickListener.clicked(null, actor.getX(), actor.getY());
-                    }
-                }
-            }
-        }
-
-
-    }
-
-    private void soundAction(Image img, Sound sound, float soundDuration, float pitchStart, float pitchEnd, Interpolation interpolation) {
-        // 加載音效
-
-
-        long soundId = sound.play(); // 需要保存这个ID来稍后控制音效
-
-        // 创建一个曲线插值，例如线性或加速插值
-
-        // 创建并添加Action到某个Actor，这样它就会执行
-        SoundAction soundAction = new SoundAction(sound, soundId, soundDuration, pitchStart, pitchEnd, interpolation);
-        soundAction.setVolume(0.33f);
-        img.addAction(soundAction);
-
-    }
 
     public class AnimatedActor extends Actor {
         private Animation<TextureRegion> animation;
