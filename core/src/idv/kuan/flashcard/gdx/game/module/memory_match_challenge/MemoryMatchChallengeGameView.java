@@ -41,13 +41,14 @@ import idv.kuan.flashcard.gdx.game.util.StyleUtil;
 import idv.kuan.libs.interfaces.observers.Observer;
 import idv.kuan.libs.interfaces.observers.Subject;
 
-public class MemoryMatchChallengeGameView extends GameView implements Subject<MemoryMatchChallengeGameView.DefCardHandle> {
+public class MemoryMatchChallengeGameView extends GameView implements Subject<Action> {
     final private static int CLICKLISTENER_ID_FOR_SOUNDACTION = 1;
     final private static int CLICKLISTENER_ID_FOR_FLIPACTION = 2;
     final static int CARD_WIDTH = 100, CARD_HEIGHT = 100, PADDING = 5;
     final float ANIM_DURATIONTIME = 0.75f;
 
-    private List<Observer<MemoryMatchChallengeGameView.DefCardHandle>> observers;
+    private List<Observer<Action>> actionObservers;
+    private Action observerAction;
 
     private List<DefCardHandle> cardHandles;
     private final int CARDCOUNT = 12;
@@ -58,23 +59,22 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
     static private DefCardHandle firstCard = null;
     static private DefCardHandle secondCard = null;
 
+
     @Override
-    public void registerObserver(Observer<DefCardHandle> observer) {
-        observers.add(observer);
-        Gdx.app.log("MMCG", "add observer:" + ((DefCardHandle) observer).getWord().getTerm());
-        notifyObservers();
+    public List<Observer<Action>> getActionObservers() {
+        return this.actionObservers;
     }
 
     @Override
-    public void removeObserver(Observer<DefCardHandle> observer) {
-        observers.remove(observer);
+    public void setDataAndNotifyObservers(Action data) {
+        this.observerAction = data;
+
+        Subject.super.setDataAndNotifyObservers(data);
     }
 
     @Override
-    public void notifyObservers() {
-        observers.forEach(x -> {
-            x.update((DefCardHandle) x);
-        });
+    public Action getData() {
+        return this.observerAction;
     }
 
 
@@ -92,7 +92,7 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
     }
 
     //DefCardHandle --begin
-    protected static class DefCardHandle extends CardHandle implements Observer<DefCardHandle> {
+    protected static class DefCardHandle extends CardHandle implements Observer<Action> {
         private MemoryMatchChallengeGameView view;
         private TextureRegion frontBackgroundTexReg;
         private TextureRegion backBackgroundTexReg;
@@ -161,6 +161,7 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
                     final float originalY = DefCardHandle.this.getBackground().getY();
 
                     view.registerObserver(DefCardHandle.this);
+                    view.setDataAndNotifyObservers(new TestActon(DefCardHandle.this.getWord().getTerm()));
 
                     DefCardHandle.this.background.addAction(
 
@@ -252,8 +253,13 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
 
 
         @Override
-        public void update(DefCardHandle data) {
-            Gdx.app.log("MMCG", "observer:" + this.word.getTerm());
+        public Subject getSubject() {
+            return this.view;
+        }
+
+        @Override
+        public void update(Action data) {
+            Gdx.app.log("MMCG", "update data=" + ((TestActon) data).toString());
         }
     }
     //DefCardHandle --end
@@ -272,7 +278,7 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
 
         //init texture --end
 
-        observers = new ArrayList<>();
+        actionObservers = new ArrayList<>();
         cardHandles = new ArrayList<>();
 
         float scaleFactor = 15;
@@ -575,5 +581,24 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
         }
     }
 
+    public static class TestActon extends Action {
+        private String name;
 
+        public TestActon(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public boolean act(float delta) {
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return "TestActon{" +
+                    "name='" + name + '\'' +
+                    '}';
+        }
+    }
 }
+
