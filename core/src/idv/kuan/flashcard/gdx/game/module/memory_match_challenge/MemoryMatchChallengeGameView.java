@@ -71,10 +71,30 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Ac
         this.observerAction = data;
 
         if (this.actionObservers.size() == 2) {
+            /*
             this.actionObservers.forEach(o -> {
                 this.onCardSelected(this.stage, ((DefCardHandle) o));
 
             });
+
+             //*/
+
+            final float DELAY_TIME = 2.0f;
+
+
+            DefCardHandle cardHandle1 = (DefCardHandle) this.actionObservers.get(0);
+            DefCardHandle cardHandle2 = (DefCardHandle) this.actionObservers.get(1);
+            if (cardHandle1.getWord().getId() == cardHandle2.getWord().getId()) {
+
+            } else {
+                delayAndAct(stage, () -> {
+                    triggerClick(cardHandle1.isFrontState, cardHandle1.getBackground());
+                    triggerClick(cardHandle2.isFrontState, cardHandle2.getBackground());
+                    firstCard = null;
+                    secondCard = null;
+                }, DELAY_TIME);
+            }
+
             this.actionObservers.clear();
         }
         Subject.super.setDataAndNotifyObservers(data);
