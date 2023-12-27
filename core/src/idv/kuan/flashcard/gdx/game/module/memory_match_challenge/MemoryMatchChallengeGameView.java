@@ -60,6 +60,7 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Ac
     static private DefCardHandle secondCard = null;
 
 
+    //observers --begin
     @Override
     public List<Observer<Action>> getActionObservers() {
         return this.actionObservers;
@@ -69,14 +70,22 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Ac
     public void setDataAndNotifyObservers(Action data) {
         this.observerAction = data;
 
+        if (this.actionObservers.size() == 2) {
+            this.actionObservers.forEach(o -> {
+                this.onCardSelected(this.stage, ((DefCardHandle) o));
+
+            });
+            this.actionObservers.clear();
+        }
         Subject.super.setDataAndNotifyObservers(data);
+
     }
 
     @Override
     public Action getData() {
         return this.observerAction;
     }
-
+    //observers --end
 
     private static class IdentifiedClickListener extends ClickListener {
 
@@ -259,7 +268,7 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Ac
 
         @Override
         public void update(Action data) {
-            Gdx.app.log("MMCG", "update data=" + ((TestActon) data).toString());
+            // Gdx.app.log("MMCG", "update data=" + ((TestActon) data).toString());
         }
     }
     //DefCardHandle --end
