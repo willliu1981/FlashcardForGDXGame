@@ -41,14 +41,14 @@ import idv.kuan.flashcard.gdx.game.util.StyleUtil;
 import idv.kuan.libs.interfaces.observers.Observer;
 import idv.kuan.libs.interfaces.observers.Subject;
 
-public class MemoryMatchChallengeGameView extends GameView implements Subject<Action> {
+public class MemoryMatchChallengeGameView extends GameView implements Subject<Integer> {
     final private static int CLICKLISTENER_ID_FOR_SOUNDACTION = 1;
     final private static int CLICKLISTENER_ID_FOR_FLIPACTION = 2;
     final static int CARD_WIDTH = 100, CARD_HEIGHT = 100, PADDING = 5;
     final float ANIM_DURATIONTIME = 0.75f;
 
-    private List<Observer<Action>> actionObservers;
-    private Action observerAction;
+    private List<Observer<Integer>> cardhandleObservers;
+    private int observersData;
 
     private List<DefCardHandle> cardHandles;
     private final int CARDCOUNT = 12;
@@ -62,48 +62,40 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Ac
 
     //observers --begin
     @Override
-    public List<Observer<Action>> getActionObservers() {
-        return this.actionObservers;
+    public List<Observer<Integer>> getObservers() {
+        return this.cardhandleObservers;
     }
 
     @Override
-    public void setDataAndNotifyObservers(Action data) {
-        this.observerAction = data;
+    public void notifyObserversWithData(Integer data) {
 
-        if (this.actionObservers.size() == 2) {
+        this.observersData = data;
             /*
-            this.actionObservers.forEach(o -> {
-                this.onCardSelected(this.stage, ((DefCardHandle) o));
-
-            });
-
-             //*/
-
+        if (this.cardhandleObservers.size() == 2) {
             final float DELAY_TIME = 2.0f;
 
-
-            DefCardHandle cardHandle1 = (DefCardHandle) this.actionObservers.get(0);
-            DefCardHandle cardHandle2 = (DefCardHandle) this.actionObservers.get(1);
+            DefCardHandle cardHandle1 = (DefCardHandle) this.cardhandleObservers.get(0);
+            DefCardHandle cardHandle2 = (DefCardHandle) this.cardhandleObservers.get(1);
             if (cardHandle1.getWord().getId() == cardHandle2.getWord().getId()) {
 
             } else {
                 delayAndAct(stage, () -> {
                     triggerClick(cardHandle1.isFrontState, cardHandle1.getBackground());
                     triggerClick(cardHandle2.isFrontState, cardHandle2.getBackground());
-                    firstCard = null;
-                    secondCard = null;
                 }, DELAY_TIME);
             }
 
-            this.actionObservers.clear();
+            this.cardhandleObservers.clear();
         }
-        Subject.super.setDataAndNotifyObservers(data);
+            //*/
+
+        Subject.super.notifyObserversWithData(data);
 
     }
 
     @Override
-    public Action getData() {
-        return this.observerAction;
+    public Integer getData() {
+        return this.observersData;
     }
     //observers --end
 
@@ -179,7 +171,7 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Ac
 
         //init texture --end
 
-        actionObservers = new ArrayList<>();
+        cardhandleObservers = new ArrayList<>();
         cardHandles = new ArrayList<>();
 
         float scaleFactor = 15;
@@ -375,7 +367,8 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Ac
     }
 
     //DefCardHandle --begin
-    protected static class DefCardHandle extends CardHandle implements Observer<Action> {
+    protected static class DefCardHandle extends CardHandle implements Observer<Integer> {
+        private static int currentAddId;
         private MemoryMatchChallengeGameView view;
         private TextureRegion frontBackgroundTexReg;
         private TextureRegion backBackgroundTexReg;
@@ -383,6 +376,7 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Ac
         private Sound flipToBackSound;
         private boolean isFrontState;
         private boolean isMatchFinish;
+        private int id;
 
 
         //selected card
@@ -401,6 +395,8 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Ac
             this.flipToBackSound = Gdx.audio.newSound(Gdx.files.internal(flipToFBackSoundFilePath));
             this.isFrontState = false;
             this.isMatchFinish = false;
+
+            this.id = currentAddId++;
         }
 
         //DefCardHandle initialize --begin
@@ -444,7 +440,8 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Ac
                     final float originalY = DefCardHandle.this.getBackground().getY();
 
                     view.registerObserver(DefCardHandle.this);
-                    view.setDataAndNotifyObservers(new TestActon(DefCardHandle.this.getWord().getTerm()));
+                    //view.notifyObserversWithData(DefCardHandle.this.getWord().getId());
+                    view.setData(DefCardHandle.this.getWord().getId());
 
                     DefCardHandle.this.background.addAction(
 
@@ -541,8 +538,8 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Ac
         }
 
         @Override
-        public void update(Action data) {
-            // Gdx.app.log("MMCG", "update data=" + ((TestActon) data).toString());
+        public void update(Integer data) {
+            Gdx.app.log("MMCG", "update data=" + data + " ,this id=" + this.getWord().getId());
         }
     }
     //DefCardHandle --end
