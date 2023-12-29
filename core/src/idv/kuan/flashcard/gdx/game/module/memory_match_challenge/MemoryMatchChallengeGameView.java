@@ -56,9 +56,7 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
     private TextureRegion blackCardTexReg;
     private Texture backCardAminsTexture;
 
-    //selected card
-    static private DefCardHandle firstCard = null;
-    static private DefCardHandle secondCard = null;
+    private int flipToFrontCount;
 
 
     //MemoryMatchChallengeGameView initialize --begin
@@ -241,19 +239,6 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
         img.addAction(aminAction);
     }
 
-    @Override
-    public List<Observer<DefCardHandle>> getObservers() {
-        return this.cardhandleObservers;
-    }
-
-    @Override
-    public Map<String, Object> getOtherData() {
-        HashMap<String, Object> objectHashMap = new HashMap<>();
-        objectHashMap.put("stage", this.stage);
-        return objectHashMap;
-    }
-
-
     private void soundAction(Image img, Sound sound, float soundDuration, float pitchStart, float pitchEnd, Interpolation interpolation) {
         // 加載音效
 
@@ -269,7 +254,28 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
 
     }
 
-    //class --begin
+    @Override
+    public List<Observer<DefCardHandle>> getObservers() {
+        return this.cardhandleObservers;
+    }
+
+    @Override
+    public Map<String, Object> getOtherData() {
+        HashMap<String, Object> objectHashMap = new HashMap<>();
+        objectHashMap.put("stage", this.stage);
+        return objectHashMap;
+    }
+
+    protected void setFlipToFrontCount(int count) {
+        this.flipToFrontCount = count;
+    }
+
+    protected int getFlipToFrontCount() {
+        return this.flipToFrontCount;
+    }
+
+
+    //inner class --begin
 
     private static class IdentifiedClickListener extends ClickListener {
 
@@ -416,6 +422,7 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
                     DefCardHandle.this.flipListener.clicked(event, x, y);
 
                     view.registerObserver(DefCardHandle.this);
+                    view.setFlipToFrontCount(view.getFlipToFrontCount() + 1);
                     DefCardHandle.this.setData(DefCardHandle.this);
                 }
             });
@@ -427,6 +434,10 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
 
         private void finishMatch() {
             this.isMatchFinish = true;
+        }
+
+        protected boolean isMatchFinish() {
+            return isMatchFinish;
         }
 
 
@@ -452,14 +463,6 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
             return soundAction;
         }
 
-        public boolean isFrontState() {
-            return isFrontState;
-        }
-
-        public Image getBackground() {
-            return background;
-        }
-
 
         //observer --begin
 
@@ -468,30 +471,73 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
             return this.view;
         }
 
+        @Override
+        public void onBeforeAllUpdate(DefCardHandle data) {
+            if (this.view.flipToFrontCount == 2) {
+                if (this.getId() != data.getId()) {
+                    if (this.getWord().getId() == data.getWord().getId()) {
+                        this.finishMatch();
+                        data.finishMatch();
+                    }
+                }
+            }
+        }
 
         @Override
         public void update(Stage stage, DefCardHandle data) {
             final float DELAY_TIME = 2.0f;
 
             //Gdx.app.log("MMCG", "update data=" + data.getWord().getId() + " ,this id=" + this.getWord().getId());
-            delayAndAct(stage, () -> {
-                DefCardHandle.this.soundListener.clicked(null,
-                        DefCardHandle.this.background.getX(), DefCardHandle.this.background.getY());
-                DefCardHandle.this.flipListener.clicked(null,
-                        DefCardHandle.this.background.getX(), DefCardHandle.this.background.getY());
-            }, DELAY_TIME);
+
+
+            if (this.view.flipToFrontCount == 2) {
+                if (!this.isMatchFinish()) {
+                    delayAndAct(stage, () -> {
+                        this.soundListener.clicked(null,
+                                this.background.getX(), this.background.getY());
+
+                        this.flipListener.clicked(null,
+                                this.background.getX(), DefCardHandle.this.background.getY());
+
+                    }, DELAY_TIME);
+                }
+
+            } else {
+
+            }
+
+
         }
 
+        @Override
+        public void onAfterAllUpdate(DefCardHandle data) {
+            if (this.view.flipToFrontCount == 2) {
+                this.getSubject().getObservers().clear();
+                this.view.setFlipToFrontCount(0);
+            }
+        }
 
         // 這是一個延遲執行動作的方法
         private void delayAndAct(Stage stage, Runnable action, float delayTime) {
-            SequenceAction sequence = Actions.sequence(Actions.delay(delayTime), Actions.run(action));
+            SequenceAction sequence = Actions.sequence(
+                    Actions.delay(delayTime),
+                    Actions.run(action));
             stage.addAction(sequence);
         }
 
         //observer --end
 
+        public boolean isFrontState() {
+            return isFrontState;
+        }
 
+        public Image getBackground() {
+            return background;
+        }
+
+        public int getId() {
+            return this.id;
+        }
     }
     //DefCardHandle --end
 
