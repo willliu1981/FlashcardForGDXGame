@@ -41,14 +41,13 @@ import idv.kuan.flashcard.gdx.game.util.StyleUtil;
 import idv.kuan.libs.interfaces.observers.Observer;
 import idv.kuan.libs.interfaces.observers.Subject;
 
-public class MemoryMatchChallengeGameView extends GameView implements Subject<Integer> {
+public class MemoryMatchChallengeGameView extends GameView implements Subject<MemoryMatchChallengeGameView.DefCardHandle> {
     final private static int CLICKLISTENER_ID_FOR_SOUNDACTION = 1;
     final private static int CLICKLISTENER_ID_FOR_FLIPACTION = 2;
     final static int CARD_WIDTH = 100, CARD_HEIGHT = 100, PADDING = 5;
     final float ANIM_DURATIONTIME = 0.75f;
 
-    private List<Observer<Integer>> cardhandleObservers;
-    private int observersData;
+    private List<Observer<DefCardHandle>> cardhandleObservers;
 
     private List<DefCardHandle> cardHandles;
     private final int CARDCOUNT = 12;
@@ -58,103 +57,6 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<In
     //selected card
     static private DefCardHandle firstCard = null;
     static private DefCardHandle secondCard = null;
-
-
-    //observers --begin
-    @Override
-    public List<Observer<Integer>> getObservers() {
-        return this.cardhandleObservers;
-    }
-
-    @Override
-    public void notifyObserversWithData(Integer data) {
-
-        this.observersData = data;
-            /*
-        if (this.cardhandleObservers.size() == 2) {
-            final float DELAY_TIME = 2.0f;
-
-            DefCardHandle cardHandle1 = (DefCardHandle) this.cardhandleObservers.get(0);
-            DefCardHandle cardHandle2 = (DefCardHandle) this.cardhandleObservers.get(1);
-            if (cardHandle1.getWord().getId() == cardHandle2.getWord().getId()) {
-
-            } else {
-                delayAndAct(stage, () -> {
-                    triggerClick(cardHandle1.isFrontState, cardHandle1.getBackground());
-                    triggerClick(cardHandle2.isFrontState, cardHandle2.getBackground());
-                }, DELAY_TIME);
-            }
-
-            this.cardhandleObservers.clear();
-        }
-            //*/
-
-        Subject.super.notifyObserversWithData(data);
-
-    }
-
-    @Override
-    public Integer getData() {
-        return this.observersData;
-    }
-    //observers --end
-
-    //card selected ==begin
-    public void onCardSelected(Stage stage, DefCardHandle card) {
-        if (firstCard == null) {
-            firstCard = card;
-            // 翻開卡片
-        } else if (secondCard == null && card != firstCard) {
-            secondCard = card;
-            // 翻開第二張卡片並檢查配對
-            checkForMatch(stage);
-        }
-    }
-
-    private void checkForMatch(Stage stage) {
-        final float DELAY_TIME = 3.0f;
-        if (firstCard.getWord().getId() == secondCard.getWord().getId()) {
-            // 配對成功
-            firstCard = null;
-            secondCard = null;
-        } else {
-            // 延遲一段時間後翻回卡片
-            delayAndAct(stage, () -> {
-                triggerClick(firstCard.isFrontState, firstCard.getBackground());
-                triggerClick(secondCard.isFrontState, secondCard.getBackground());
-                firstCard = null;
-                secondCard = null;
-            }, DELAY_TIME);
-        }
-    }
-
-    // 這是一個延遲執行動作的方法
-    private void delayAndAct(Stage stage, Runnable action, float delayTime) {
-        SequenceAction sequence = Actions.sequence(Actions.delay(delayTime), Actions.run(action));
-        stage.addAction(sequence);
-    }
-
-    //card selected ==end
-
-    private void triggerClick(boolean isFrontState, Actor actor) {
-        if (isFrontState) {
-            // 遍歷actor的所有事件監聽器
-            for (EventListener listener : actor.getListeners()) {
-                // 檢查是否為ClickListener
-                if (listener instanceof IdentifiedClickListener) {
-                    // 強制轉換為ClickListener
-                    IdentifiedClickListener clickListener = (IdentifiedClickListener) listener;
-                    if (clickListener.getIdentifier() == MemoryMatchChallengeGameView.CLICKLISTENER_ID_FOR_SOUNDACTION
-                            || clickListener.getIdentifier() == MemoryMatchChallengeGameView.CLICKLISTENER_ID_FOR_FLIPACTION) {
-                        // 觸發點擊事件，這裡的參數可以根據需要調整
-                        clickListener.clicked(null, actor.getX(), actor.getY());
-                    }
-                }
-            }
-        }
-
-
-    }
 
 
     //MemoryMatchChallengeGameView initialize --begin
@@ -337,6 +239,69 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<In
         img.addAction(aminAction);
     }
 
+    @Override
+    public List<Observer<DefCardHandle>> getObservers() {
+        return this.cardhandleObservers;
+    }
+
+
+    //card selected ==begin
+    public void onCardSelected(Stage stage, DefCardHandle card) {
+        if (firstCard == null) {
+            firstCard = card;
+            // 翻開卡片
+        } else if (secondCard == null && card != firstCard) {
+            secondCard = card;
+            // 翻開第二張卡片並檢查配對
+            checkForMatch(stage);
+        }
+    }
+
+    private void checkForMatch(Stage stage) {
+        final float DELAY_TIME = 3.0f;
+        if (firstCard.getWord().getId() == secondCard.getWord().getId()) {
+            // 配對成功
+            firstCard = null;
+            secondCard = null;
+        } else {
+            // 延遲一段時間後翻回卡片
+            delayAndAct(stage, () -> {
+                triggerClick(firstCard.isFrontState, firstCard.getBackground());
+                triggerClick(secondCard.isFrontState, secondCard.getBackground());
+                firstCard = null;
+                secondCard = null;
+            }, DELAY_TIME);
+        }
+    }
+
+    // 這是一個延遲執行動作的方法
+    private void delayAndAct(Stage stage, Runnable action, float delayTime) {
+        SequenceAction sequence = Actions.sequence(Actions.delay(delayTime), Actions.run(action));
+        stage.addAction(sequence);
+    }
+
+    //card selected ==end
+
+    private void triggerClick(boolean isFrontState, Actor actor) {
+        if (isFrontState) {
+            // 遍歷actor的所有事件監聽器
+            for (EventListener listener : actor.getListeners()) {
+                // 檢查是否為ClickListener
+                if (listener instanceof IdentifiedClickListener) {
+                    // 強制轉換為ClickListener
+                    IdentifiedClickListener clickListener = (IdentifiedClickListener) listener;
+                    if (clickListener.getIdentifier() == MemoryMatchChallengeGameView.CLICKLISTENER_ID_FOR_SOUNDACTION
+                            || clickListener.getIdentifier() == MemoryMatchChallengeGameView.CLICKLISTENER_ID_FOR_FLIPACTION) {
+                        // 觸發點擊事件，這裡的參數可以根據需要調整
+                        clickListener.clicked(null, actor.getX(), actor.getY());
+                    }
+                }
+            }
+        }
+
+
+    }
+
 
     private void soundAction(Image img, Sound sound, float soundDuration, float pitchStart, float pitchEnd, Interpolation interpolation) {
         // 加載音效
@@ -353,6 +318,8 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<In
 
     }
 
+    //class --begin
+
     private static class IdentifiedClickListener extends ClickListener {
 
         int identifier;
@@ -367,7 +334,7 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<In
     }
 
     //DefCardHandle --begin
-    protected static class DefCardHandle extends CardHandle implements Observer<Integer> {
+    protected static class DefCardHandle extends CardHandle implements Observer<DefCardHandle> {
         private static int currentAddId;
         private MemoryMatchChallengeGameView view;
         private TextureRegion frontBackgroundTexReg;
@@ -441,7 +408,7 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<In
 
                     view.registerObserver(DefCardHandle.this);
                     //view.notifyObserversWithData(DefCardHandle.this.getWord().getId());
-                    view.setData(DefCardHandle.this.getWord().getId());
+                    DefCardHandle.this.setData(DefCardHandle.this);
 
                     DefCardHandle.this.background.addAction(
 
@@ -538,9 +505,13 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<In
         }
 
         @Override
-        public void update(Integer data) {
-            Gdx.app.log("MMCG", "update data=" + data + " ,this id=" + this.getWord().getId());
+        public void update(DefCardHandle data) {
+            Gdx.app.log("MMCG", "update data=" + data.getWord().getId() + " ,this id=" + this.getWord().getId());
+
+
         }
+
+
     }
     //DefCardHandle --end
 
