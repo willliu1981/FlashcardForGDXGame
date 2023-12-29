@@ -5,6 +5,7 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -25,14 +26,20 @@ public class DefCardHandle extends CardHandle implements DefCardHandleObservers 
     private MemoryMatchChallengeGameView view;
     private TextureRegion frontBackgroundTexReg;
     private TextureRegion backBackgroundTexReg;
+    private TextureRegion matchedTexReg;
+    private TextureRegion darkMatchedTexReg;
     private Sound flipToFrontSound;
     private Sound flipToBackSound;
+    private Sound matchedSound;
+    private Sound darkMatchedSound;
     private boolean isFrontState;
     private boolean isMatched;
     private boolean isFinishMatch;
     private int id;
-    private ClickListener soundListener;
-    private ClickListener flipListener;
+    private ClickListener flipSoundListener;
+    private ClickListener flipImageListener;
+    private Action matchImageAction;
+    private Action darkMatchImageAction;
 
 
     //selected card
@@ -42,13 +49,19 @@ public class DefCardHandle extends CardHandle implements DefCardHandleObservers 
 
     public DefCardHandle(MemoryMatchChallengeGameView view, Image background,
                          TextureRegion frontBackgroundTexReg, TextureRegion backBackgroundTexReg,
-                         String flipToFrontSoundFilePath, String flipToFBackSoundFilePath) {
+                         TextureRegion matchedTexReg, TextureRegion darkMatchedTexRegTexReg,
+                         String flipToFrontSoundFilePath, String flipToFBackSoundFilePath,
+                         String matchedSoundFilePath, String darkMatchedSoundFilePath) {
         super(background);
         this.view = view;
         this.frontBackgroundTexReg = frontBackgroundTexReg;
         this.backBackgroundTexReg = backBackgroundTexReg;
+        this.matchedTexReg = matchedTexReg;
+        this.darkMatchedTexReg = darkMatchedTexRegTexReg;
         this.flipToFrontSound = Gdx.audio.newSound(Gdx.files.internal(flipToFrontSoundFilePath));
         this.flipToBackSound = Gdx.audio.newSound(Gdx.files.internal(flipToFBackSoundFilePath));
+        this.matchedSound = Gdx.audio.newSound(Gdx.files.internal(matchedSoundFilePath));
+        this.darkMatchedSound = Gdx.audio.newSound(Gdx.files.internal(darkMatchedSoundFilePath));
         this.isFrontState = false;
         this.isMatched = false;
 
@@ -60,10 +73,10 @@ public class DefCardHandle extends CardHandle implements DefCardHandleObservers 
     @Override
     protected void initialize() {
         // 设置卡片的原点为中心
-        this.background.setOrigin(CARD_WIDTH / 2, CARD_HEIGHT * 2 / 2);
+        this.background.setOrigin(CARD_WIDTH / 2, CARD_HEIGHT / 2);
 
         //set sound listener --begin
-        soundListener = new ClickListener() {
+        flipSoundListener = new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 super.clicked(event, x, y);
@@ -77,8 +90,9 @@ public class DefCardHandle extends CardHandle implements DefCardHandleObservers 
         };
         //set sound listener --end
 
+
         //set flip listener ==begin
-        flipListener = new ClickListener() {
+        flipImageListener = new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 super.clicked(event, x, y);
@@ -145,11 +159,13 @@ public class DefCardHandle extends CardHandle implements DefCardHandleObservers 
         };
         //set flip listener ==end
 
+
+        //do click for flip with all listener
         this.background.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                DefCardHandle.this.soundListener.clicked(event, x, y);
-                DefCardHandle.this.flipListener.clicked(event, x, y);
+                DefCardHandle.this.flipSoundListener.clicked(event, x, y);
+                DefCardHandle.this.flipImageListener.clicked(event, x, y);
 
                 view.registerObserver(DefCardHandle.this);
                 DefCardHandle.flipToFrontCount++;
@@ -157,6 +173,15 @@ public class DefCardHandle extends CardHandle implements DefCardHandleObservers 
             }
         });
 
+
+        //match
+        this.matchImageAction = Actions.sequence(Actions.scaleTo(1.25f, 1.25f,
+                        0.25f, Interpolation.bounceOut),
+                Actions.scaleTo(1.0f, 1.0f,
+                        0.25f, Interpolation.bounceIn));
+        //dark match
+        this.darkMatchImageAction = Actions.sequence(Actions.scaleTo(0.8f, 0.8f,
+                0.33f, Interpolation.smooth));
 
     }
     //DefCardHandle initialize --end
@@ -200,6 +225,19 @@ public class DefCardHandle extends CardHandle implements DefCardHandleObservers 
         return soundAction;
     }
 
+    private SoundAction playMatchedWithSoundAction() {
+        SoundAction soundAction = new SoundAction(matchedSound);
+        soundAction.setVolume(0.33f);
+        background.addAction(soundAction);
+        return soundAction;
+    }
+
+    private SoundAction playDarkMatchedWithSoundAction() {
+        SoundAction soundAction = new SoundAction(darkMatchedSound);
+        soundAction.setVolume(0.33f);
+        background.addAction(soundAction);
+        return soundAction;
+    }
 
     //observer --begin
 
@@ -228,12 +266,35 @@ public class DefCardHandle extends CardHandle implements DefCardHandleObservers 
         final float DELAY_TIME = 2.0f;
 
         if (this.isFinishMatch()) {
-            if (!this.isMatched()) {
+            if (this.isMatched()) {
+                //配對成功
+
+                //match
                 delayAndAct(stage, () -> {
-                    this.soundListener.clicked(null,
+                    this.getBackground().setDrawable(new TextureRegionDrawable(new TextureRegion(this.matchedTexReg)));
+                    this.playMatchedWithSoundAction();
+
+                    this.getBackground().addAction(this.matchImageAction);
+
+                }, DELAY_TIME / 2);
+
+                //dark match
+                delayAndAct(stage, () -> {
+                    this.getBackground().setDrawable(new TextureRegionDrawable(new TextureRegion(this.darkMatchedTexReg)));
+                    this.playDarkMatchedWithSoundAction();
+
+                    this.getBackground().addAction(this.darkMatchImageAction);
+
+                }, DELAY_TIME * 1.5f);
+
+
+            } else {
+                //沒有配對成功
+                delayAndAct(stage, () -> {
+                    this.flipSoundListener.clicked(null,
                             this.background.getX(), this.background.getY());
 
-                    this.flipListener.clicked(null,
+                    this.flipImageListener.clicked(null,
                             this.background.getX(), DefCardHandle.this.background.getY());
 
                 }, DELAY_TIME);

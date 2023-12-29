@@ -43,8 +43,6 @@ import idv.kuan.libs.interfaces.observers.Observer;
 import idv.kuan.libs.interfaces.observers.Subject;
 
 public class MemoryMatchChallengeGameView extends GameView implements Subject<DefCardHandle> {
-    final private static int CLICKLISTENER_ID_FOR_SOUNDACTION = 1;
-    final private static int CLICKLISTENER_ID_FOR_FLIPACTION = 2;
     final static int CARD_WIDTH = 100, CARD_HEIGHT = 100, PADDING = 5;
     final float ANIM_DURATIONTIME = 0.75f;
 
@@ -64,6 +62,10 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<De
         TextureRegion cardBackTexReg = new TextureRegion(new Texture("test/b1.png"));
         TextureRegion questionTexReg = new TextureRegion(new Texture("test/q4.png"));
         TextureRegion answerTexReg = new TextureRegion(new Texture("test/a4.png"));
+        TextureRegion matchedQuestionTexReg = new TextureRegion(new Texture("test/matched_q4.png"));
+        TextureRegion matchedAnswerTexReg = new TextureRegion(new Texture("test/matched_a4.png"));
+        TextureRegion darkMatchedQuestionTexReg = new TextureRegion(new Texture("test/dark_matched_q4.png"));
+        TextureRegion darkMatchedAnswerTexReg = new TextureRegion(new Texture("test/dark_matched_a4.png"));
 
         backCardAminsTexture = new Texture("test/bs3.png");
 
@@ -97,6 +99,7 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<De
             for (Word word : all) {
 
                 //question --begin
+                //common
                 CardTextureUtil.CardTextureCreator questionCardTextureCreator = CardTextureUtil.getCardTextureCreator(batch);
                 questionCardTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.ITextureCreator() {
                     @Override
@@ -120,12 +123,68 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<De
                         model.setDrawTarget(table, (int) (CARD_WIDTH * 20 / scaleFactor), (int) (CARD_HEIGHT * 10 / scaleFactor));
                     }
                 });
+
+                //matched
+                CardTextureUtil.CardTextureCreator matchedQuestionCardTextureCreator = CardTextureUtil.getCardTextureCreator(batch);
+                matchedQuestionCardTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.ITextureCreator() {
+                    @Override
+                    public void createTexture(CardTextureUtil.TextureCreatorModel model) {
+                        Table table = new Table();
+                        table.setSize(CARD_WIDTH * 20 / scaleFactor, CARD_HEIGHT * 10 / scaleFactor);
+                        table.setBackground(new TextureRegionDrawable(matchedQuestionTexReg));
+
+                        //書寫文字 --begin
+                        labelStyle.fontColor = Color.YELLOW;
+                        Label label = new Label(word.getTerm(), labelStyle);
+
+                        // 設定Label的一些屬性
+                        label.setAlignment(Align.center);
+                        label.setWrap(true);
+                        table.add(label).expand().fill();
+
+                        //書寫文字 --end
+
+
+                        model.setDrawTarget(table, (int) (CARD_WIDTH * 20 / scaleFactor), (int) (CARD_HEIGHT * 10 / scaleFactor));
+                    }
+                });
+
+                //dark
+                CardTextureUtil.CardTextureCreator darkMatchedQuestionCardTextureCreator = CardTextureUtil.getCardTextureCreator(batch);
+                darkMatchedQuestionCardTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.ITextureCreator() {
+                    @Override
+                    public void createTexture(CardTextureUtil.TextureCreatorModel model) {
+                        Table table = new Table();
+                        table.setSize(CARD_WIDTH * 20 / scaleFactor, CARD_HEIGHT * 10 / scaleFactor);
+                        table.setBackground(new TextureRegionDrawable(darkMatchedQuestionTexReg));
+
+                        //書寫文字 --begin
+                        labelStyle.fontColor = Color.YELLOW;
+                        Label label = new Label(word.getTerm(), labelStyle);
+
+                        // 設定Label的一些屬性
+                        label.setAlignment(Align.center);
+                        label.setWrap(true);
+                        table.add(label).expand().fill();
+
+                        //書寫文字 --end
+
+
+                        model.setDrawTarget(table, (int) (CARD_WIDTH * 20 / scaleFactor), (int) (CARD_HEIGHT * 10 / scaleFactor));
+                    }
+                });
+
+                //set cardhandle
                 DefCardHandle questionCardHandle = new DefCardHandle(this, new Image(blackCardTexReg),
                         questionCardTextureCreator.getTextureRegion(), cardBackTexReg,
-                        "sounds/water004.wav", "sounds/water002.wav");
+                        matchedQuestionCardTextureCreator.getTextureRegion(),
+                        darkMatchedQuestionCardTextureCreator.getTextureRegion(),
+                        "sounds/water004.wav", "sounds/water002.wav",
+                        "sounds/single029.wav", "sounds/single039.wav");
                 //question --end
 
                 //answer  ==begin
+                //common
                 CardTextureUtil.CardTextureCreator answerCardTextureCreator = CardTextureUtil.getCardTextureCreator(batch);
                 answerCardTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.ITextureCreator() {
                     @Override
@@ -148,9 +207,62 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<De
                         model.setDrawTarget(table, (int) (CARD_WIDTH * 20 / scaleFactor), (int) (CARD_HEIGHT * 10 / scaleFactor));
                     }
                 });
+
+                //matched
+                CardTextureUtil.CardTextureCreator matchedAnswerCardTextureCreator = CardTextureUtil.getCardTextureCreator(batch);
+                matchedAnswerCardTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.ITextureCreator() {
+                    @Override
+                    public void createTexture(CardTextureUtil.TextureCreatorModel model) {
+                        Table table = new Table();
+                        table.setSize(CARD_WIDTH * 20 / scaleFactor, CARD_HEIGHT * 10 / scaleFactor);
+                        table.setBackground(new TextureRegionDrawable(matchedAnswerTexReg));
+
+                        //書寫文字 --begin
+                        labelStyle.fontColor = Color.RED;
+                        Label label = new Label(word.getTranslation(), labelStyle);
+
+                        // 設定Label的一些屬性
+                        label.setAlignment(Align.center);
+                        label.setWrap(true);
+                        table.add(label).expand().fill();
+
+                        //書寫文字 --end
+
+                        model.setDrawTarget(table, (int) (CARD_WIDTH * 20 / scaleFactor), (int) (CARD_HEIGHT * 10 / scaleFactor));
+                    }
+                });
+
+                //dark
+                CardTextureUtil.CardTextureCreator darkMatchedAnswerCardTextureCreator = CardTextureUtil.getCardTextureCreator(batch);
+                darkMatchedAnswerCardTextureCreator.createTextureRegion(new CardTextureUtil.CardTextureCreator.ITextureCreator() {
+                    @Override
+                    public void createTexture(CardTextureUtil.TextureCreatorModel model) {
+                        Table table = new Table();
+                        table.setSize(CARD_WIDTH * 20 / scaleFactor, CARD_HEIGHT * 10 / scaleFactor);
+                        table.setBackground(new TextureRegionDrawable(darkMatchedAnswerTexReg));
+
+                        //書寫文字 --begin
+                        labelStyle.fontColor = Color.RED;
+                        Label label = new Label(word.getTranslation(), labelStyle);
+
+                        // 設定Label的一些屬性
+                        label.setAlignment(Align.center);
+                        label.setWrap(true);
+                        table.add(label).expand().fill();
+
+                        //書寫文字 --end
+
+                        model.setDrawTarget(table, (int) (CARD_WIDTH * 20 / scaleFactor), (int) (CARD_HEIGHT * 10 / scaleFactor));
+                    }
+                });
+
+                //set cardlandle
                 DefCardHandle answerCardHandle = new DefCardHandle(this, new Image(blackCardTexReg),
                         answerCardTextureCreator.getTextureRegion(), cardBackTexReg,
-                        "sounds/water004.wav", "sounds/water002.wav");
+                        matchedAnswerCardTextureCreator.getTextureRegion(),
+                        darkMatchedAnswerCardTextureCreator.getTextureRegion(),
+                        "sounds/water004.wav", "sounds/water002.wav",
+                        "sounds/single029.wav", "sounds/single039.wav");
                 //answer ==end
 
 
