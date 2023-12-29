@@ -11,7 +11,6 @@ import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -55,8 +54,6 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
     private final int CARDCOUNT = 12;
     private TextureRegion blackCardTexReg;
     private Texture backCardAminsTexture;
-
-    private int flipToFrontCount;
 
 
     //MemoryMatchChallengeGameView initialize --begin
@@ -266,14 +263,6 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
         return objectHashMap;
     }
 
-    protected void setFlipToFrontCount(int count) {
-        this.flipToFrontCount = count;
-    }
-
-    protected int getFlipToFrontCount() {
-        return this.flipToFrontCount;
-    }
-
 
     //inner class --begin
 
@@ -293,13 +282,16 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
     //DefCardHandle --begin
     protected static class DefCardHandle extends CardHandle implements DefCardHandleObservers {
         private static int currentAddId;
+        private static int flipToFrontCount;
+
         private MemoryMatchChallengeGameView view;
         private TextureRegion frontBackgroundTexReg;
         private TextureRegion backBackgroundTexReg;
         private Sound flipToFrontSound;
         private Sound flipToBackSound;
         private boolean isFrontState;
-        private boolean isMatchFinish;
+        private boolean isMatched;
+        private boolean isFinishMatch;
         private int id;
         private ClickListener soundListener;
         private ClickListener flipListener;
@@ -320,7 +312,7 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
             this.flipToFrontSound = Gdx.audio.newSound(Gdx.files.internal(flipToFrontSoundFilePath));
             this.flipToBackSound = Gdx.audio.newSound(Gdx.files.internal(flipToFBackSoundFilePath));
             this.isFrontState = false;
-            this.isMatchFinish = false;
+            this.isMatched = false;
 
 
             this.id = currentAddId++;
@@ -422,7 +414,7 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
                     DefCardHandle.this.flipListener.clicked(event, x, y);
 
                     view.registerObserver(DefCardHandle.this);
-                    view.setFlipToFrontCount(view.getFlipToFrontCount() + 1);
+                    DefCardHandle.flipToFrontCount++;
                     DefCardHandle.this.setData(DefCardHandle.this);
                 }
             });
@@ -432,14 +424,21 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
         //DefCardHandle initialize --end
 
 
-        private void finishMatch() {
-            this.isMatchFinish = true;
+        private void match(boolean match) {
+            this.isMatched = match;
         }
 
-        protected boolean isMatchFinish() {
-            return isMatchFinish;
+        private void finishMatch(boolean finishMatch) {
+            this.isFinishMatch = finishMatch;
         }
 
+        protected boolean isMatched() {
+            return isMatched;
+        }
+
+        protected boolean isFinishMatch() {
+            return this.isFinishMatch;
+        }
 
         private TextureRegion getCurrentTextureRegion() {
             return this.isFrontState ? this.frontBackgroundTexReg : this.backBackgroundTexReg;
@@ -473,11 +472,14 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
 
         @Override
         public void onBeforeAllUpdate(DefCardHandle data) {
-            if (this.view.flipToFrontCount == 2) {
+            if (DefCardHandle.flipToFrontCount == 2) {
+                this.finishMatch(true);
+                data.finishMatch(true);
+
                 if (this.getId() != data.getId()) {
                     if (this.getWord().getId() == data.getWord().getId()) {
-                        this.finishMatch();
-                        data.finishMatch();
+                        this.match(true);
+                        data.match(true);
                     }
                 }
             }
@@ -487,11 +489,8 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
         public void update(Stage stage, DefCardHandle data) {
             final float DELAY_TIME = 2.0f;
 
-            //Gdx.app.log("MMCG", "update data=" + data.getWord().getId() + " ,this id=" + this.getWord().getId());
-
-
-            if (this.view.flipToFrontCount == 2) {
-                if (!this.isMatchFinish()) {
+            if (this.isFinishMatch()) {
+                if (!this.isMatched()) {
                     delayAndAct(stage, () -> {
                         this.soundListener.clicked(null,
                                 this.background.getX(), this.background.getY());
@@ -500,10 +499,13 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
                                 this.background.getX(), DefCardHandle.this.background.getY());
 
                     }, DELAY_TIME);
+
+                    this.finishMatch(false);
+
                 }
 
-            } else {
-
+                DefCardHandle.flipToFrontCount = 0;
+                this.getSubject().removeObserver(this);
             }
 
 
@@ -511,10 +513,7 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
 
         @Override
         public void onAfterAllUpdate(DefCardHandle data) {
-            if (this.view.flipToFrontCount == 2) {
-                this.getSubject().getObservers().clear();
-                this.view.setFlipToFrontCount(0);
-            }
+
         }
 
         // 這是一個延遲執行動作的方法
