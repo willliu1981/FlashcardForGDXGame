@@ -28,7 +28,9 @@ import com.badlogic.gdx.utils.Align;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import idv.kuan.flashcard.gdx.game.database.dao.WordDao;
@@ -244,62 +246,11 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
         return this.cardhandleObservers;
     }
 
-
-    //card selected ==begin
-    public void onCardSelected(Stage stage, DefCardHandle card) {
-        if (firstCard == null) {
-            firstCard = card;
-            // 翻開卡片
-        } else if (secondCard == null && card != firstCard) {
-            secondCard = card;
-            // 翻開第二張卡片並檢查配對
-            checkForMatch(stage);
-        }
-    }
-
-    private void checkForMatch(Stage stage) {
-        final float DELAY_TIME = 3.0f;
-        if (firstCard.getWord().getId() == secondCard.getWord().getId()) {
-            // 配對成功
-            firstCard = null;
-            secondCard = null;
-        } else {
-            // 延遲一段時間後翻回卡片
-            delayAndAct(stage, () -> {
-                triggerClick(firstCard.isFrontState, firstCard.getBackground());
-                triggerClick(secondCard.isFrontState, secondCard.getBackground());
-                firstCard = null;
-                secondCard = null;
-            }, DELAY_TIME);
-        }
-    }
-
-    // 這是一個延遲執行動作的方法
-    private void delayAndAct(Stage stage, Runnable action, float delayTime) {
-        SequenceAction sequence = Actions.sequence(Actions.delay(delayTime), Actions.run(action));
-        stage.addAction(sequence);
-    }
-
-    //card selected ==end
-
-    private void triggerClick(boolean isFrontState, Actor actor) {
-        if (isFrontState) {
-            // 遍歷actor的所有事件監聽器
-            for (EventListener listener : actor.getListeners()) {
-                // 檢查是否為ClickListener
-                if (listener instanceof IdentifiedClickListener) {
-                    // 強制轉換為ClickListener
-                    IdentifiedClickListener clickListener = (IdentifiedClickListener) listener;
-                    if (clickListener.getIdentifier() == MemoryMatchChallengeGameView.CLICKLISTENER_ID_FOR_SOUNDACTION
-                            || clickListener.getIdentifier() == MemoryMatchChallengeGameView.CLICKLISTENER_ID_FOR_FLIPACTION) {
-                        // 觸發點擊事件，這裡的參數可以根據需要調整
-                        clickListener.clicked(null, actor.getX(), actor.getY());
-                    }
-                }
-            }
-        }
-
-
+    @Override
+    public Map<String, Object> getOtherData() {
+        HashMap<String, Object> objectHashMap = new HashMap<>();
+        objectHashMap.put("stage", this.stage);
+        return objectHashMap;
     }
 
 
@@ -334,7 +285,7 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
     }
 
     //DefCardHandle --begin
-    protected static class DefCardHandle extends CardHandle implements Observer<DefCardHandle> {
+    protected static class DefCardHandle extends CardHandle implements DefCardHandleObservers {
         private static int currentAddId;
         private MemoryMatchChallengeGameView view;
         private TextureRegion frontBackgroundTexReg;
@@ -344,6 +295,8 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
         private boolean isFrontState;
         private boolean isMatchFinish;
         private int id;
+        private ClickListener soundListener;
+        private ClickListener flipListener;
 
 
         //selected card
@@ -363,6 +316,7 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
             this.isFrontState = false;
             this.isMatchFinish = false;
 
+
             this.id = currentAddId++;
         }
 
@@ -372,8 +326,8 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
             // 设置卡片的原点为中心
             this.background.setOrigin(CARD_WIDTH / 2, CARD_HEIGHT * 2 / 2);
 
-            //sound listener --begin
-            this.background.addListener(new IdentifiedClickListener(MemoryMatchChallengeGameView.CLICKLISTENER_ID_FOR_SOUNDACTION) {
+            //set sound listener --begin
+            soundListener = new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     super.clicked(event, x, y);
@@ -384,11 +338,11 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
                         DefCardHandle.this.playFlipToBackWithSoundAction();
                     }
                 }
-            });
-            //sound --end
+            };
+            //set sound listener --end
 
-            //flip listener ==begin
-            this.background.addListener(new IdentifiedClickListener(MemoryMatchChallengeGameView.CLICKLISTENER_ID_FOR_FLIPACTION) {
+            //set flip listener ==begin
+            flipListener = new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     super.clicked(event, x, y);
@@ -406,9 +360,6 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
                     final float originalX = DefCardHandle.this.getBackground().getX();
                     final float originalY = DefCardHandle.this.getBackground().getY();
 
-                    view.registerObserver(DefCardHandle.this);
-                    //view.notifyObserversWithData(DefCardHandle.this.getWord().getId());
-                    DefCardHandle.this.setData(DefCardHandle.this);
 
                     DefCardHandle.this.background.addAction(
 
@@ -453,8 +404,19 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
                                             , Actions.scaleTo(1, 1, DefCardHandle.this.isFrontState ? DT_TOBACK : DT_TOFRONT
                                                     , (DefCardHandle.this.isFrontState ? Interpolation.bounceOut : Interpolation.circleOut))
                                     )));
-                    //flip listener ==end
 
+                }
+            };
+            //set flip listener ==end
+
+            this.background.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    DefCardHandle.this.soundListener.clicked(event, x, y);
+                    DefCardHandle.this.flipListener.clicked(event, x, y);
+
+                    view.registerObserver(DefCardHandle.this);
+                    DefCardHandle.this.setData(DefCardHandle.this);
                 }
             });
 
@@ -499,21 +461,52 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
         }
 
 
+        //observer --begin
+
         @Override
         public Subject getSubject() {
             return this.view;
         }
 
+
         @Override
-        public void update(DefCardHandle data) {
-            Gdx.app.log("MMCG", "update data=" + data.getWord().getId() + " ,this id=" + this.getWord().getId());
+        public void update(Stage stage, DefCardHandle data) {
+            final float DELAY_TIME = 2.0f;
 
-
+            //Gdx.app.log("MMCG", "update data=" + data.getWord().getId() + " ,this id=" + this.getWord().getId());
+            delayAndAct(stage, () -> {
+                DefCardHandle.this.soundListener.clicked(null,
+                        DefCardHandle.this.background.getX(), DefCardHandle.this.background.getY());
+                DefCardHandle.this.flipListener.clicked(null,
+                        DefCardHandle.this.background.getX(), DefCardHandle.this.background.getY());
+            }, DELAY_TIME);
         }
+
+
+        // 這是一個延遲執行動作的方法
+        private void delayAndAct(Stage stage, Runnable action, float delayTime) {
+            SequenceAction sequence = Actions.sequence(Actions.delay(delayTime), Actions.run(action));
+            stage.addAction(sequence);
+        }
+
+        //observer --end
 
 
     }
     //DefCardHandle --end
+
+    //DefCardHandleObservers ==begin
+    interface DefCardHandleObservers extends Observer<DefCardHandle> {
+
+        @Override
+        default void update(DefCardHandle data) {
+            this.update((Stage) getSubject().getOtherData().get("stage"), data);
+        }
+
+        void update(Stage stage, DefCardHandle data);
+    }
+    //DefCardHandleObservers ==end
+
 
     public class AnimatedActor extends Actor {
         private Animation<TextureRegion> animation;
@@ -579,24 +572,6 @@ public class MemoryMatchChallengeGameView extends GameView implements Subject<Me
         }
     }
 
-    public static class TestActon extends Action {
-        private String name;
 
-        public TestActon(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public boolean act(float delta) {
-            return false;
-        }
-
-        @Override
-        public String toString() {
-            return "TestActon{" +
-                    "name='" + name + '\'' +
-                    '}';
-        }
-    }
 }
 
