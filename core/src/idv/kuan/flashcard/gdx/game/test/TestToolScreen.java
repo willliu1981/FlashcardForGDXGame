@@ -45,7 +45,9 @@ public class TestToolScreen extends GameView {
 
                 //2 4 7 12 21 36 63 110 192 336...
 
-                int nextPeriod = calculateNextPeriod(actual, curr);
+                ReviewSession session = new ReviewSession(actual, curr);
+
+                int nextPeriod = session.getNextPeriod();
                 lblPeriod.setText("period=" + nextPeriod);
 
             }
@@ -63,30 +65,66 @@ public class TestToolScreen extends GameView {
 
     }
 
-    int calculateNextPeriod(int actual, int curr) {
-        int next = (int) (curr * 1.75);
-        int midPoint = (curr + next) / 2;
 
-        if (actual < midPoint) {
-            // 执行 planA
-            return curr + (next - curr) * (actual / curr);
-        } else {
-            // 执行 planB
-            return planB(actual, curr);
-        }
-    }
+    public class ReviewSession {
+        private int actual;    // 实际复习时间
+        private int curr;      // 当前周期
+        private int nextPeriod; // 下一个复习周期
 
-    int planB(int actual, int curr) {
-        int next = (int) (curr * 1.75);
-        int last = (int) (curr / 1.75);
-
-        while (actual >= next) {
-            curr = next;
-            next = (int) (curr * 1.75);
-            last = (int) (last / 1.75);
+        public ReviewSession(int actual, int curr) {
+            this.actual = actual;
+            this.curr = curr;
+            this.nextPeriod = calculateNextPeriod(actual, curr);
         }
 
-        return last;
+        private int calculateNextPeriod(int actual, int curr) {
+            int next = (int) (curr * 2.1);
+            int midPoint = (curr + next) / 2;
+
+            if (actual <= midPoint) {
+                // 执行 planA
+                return curr + (int) ((next - curr) * ((float) actual / curr));
+            } else {
+                // 执行 planB
+                return planB(actual, curr);
+            }
+        }
+
+        private int planB(int actual, int curr) {
+            int next = (int) (curr * 1.75);
+            int last = (int) (curr / 1.75);
+
+            while (actual >= next) {
+                curr = next;
+                next = (int) (curr * 1.75);
+                last = (int) (last / 1.75);
+            }
+
+            return last;
+        }
+
+        // Getter and Setter methods
+        public int getActual() {
+            return actual;
+        }
+
+        public void setActual(int actual) {
+            this.actual = actual;
+            this.nextPeriod = calculateNextPeriod(actual, this.curr);
+        }
+
+        public int getCurr() {
+            return curr;
+        }
+
+        public void setCurr(int curr) {
+            this.curr = curr;
+            this.nextPeriod = calculateNextPeriod(this.actual, curr);
+        }
+
+        public int getNextPeriod() {
+            return nextPeriod;
+        }
     }
 
 
