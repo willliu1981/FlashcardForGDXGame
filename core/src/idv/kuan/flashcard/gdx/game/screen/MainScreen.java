@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 
 
 import idv.kuan.flashcard.gdx.game.module.memory_match_challenge.MemoryMatchChallengeGameView;
+import idv.kuan.flashcard.gdx.game.test.TestToolScreen;
 import idv.kuan.libs.databases.schema.modifier.DatabaseSchemaUtils;
 import idv.kuan.libs.databases.schema.modifier.SchemaModifier;
 import idv.kuan.libs.databases.schema.modifier.SchemaModifierHandler;
@@ -95,7 +96,7 @@ public class MainScreen implements Screen {
             public void changed(ChangeEvent event, Actor actor) {
 
                 //testTool();
-                game.setScreen(new MemoryMatchChallengeGameView());
+                game.setScreen(new TestToolScreen());
 
             }
         });
