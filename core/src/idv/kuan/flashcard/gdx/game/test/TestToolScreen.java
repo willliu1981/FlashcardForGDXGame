@@ -66,15 +66,38 @@ public class TestToolScreen extends GameView {
     }
 
 
-    public class ReviewSession {
+    public static class ReviewSession {
+        public static int TYPE_DAY = 1;
+        public static int TYPE_MINUTE = 2;
+        private static int primaryTime = 20;
         private int actual;    // 实际复习时间
         private int curr;      // 当前周期
         private int nextPeriod; // 下一个复习周期
+        private int type;
+        private int reviewCount;
+
+        public ReviewSession() {
+            type = TYPE_MINUTE;
+            this.nextPeriod = primaryTime;
+            reviewCount=0;
+        }
+
 
         public ReviewSession(int actual, int curr) {
+            type = TYPE_DAY;
             this.actual = actual;
             this.curr = curr;
             this.nextPeriod = calculateNextPeriod(actual, curr);
+        }
+
+        void determineNextReview(int actual, int curr) {
+            if (reviewCount==1) {
+                this.nextPeriod = 1440;//一天後
+
+            }
+
+
+
         }
 
         private int calculateNextPeriod(int actual, int curr) {
